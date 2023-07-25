@@ -25,7 +25,7 @@ import (
 
 	"github.com/google/cel-go/cel"
 
-	"k8s.io/api/admissionregistration/v1alpha1"
+	"k8s.io/api/admissionregistration/v1beta1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -44,8 +44,8 @@ import (
 const maxTypesToCheck = 10
 
 type TypeChecker struct {
-	schemaResolver resolver.SchemaResolver
-	restMapper     meta.RESTMapper
+	SchemaResolver resolver.SchemaResolver
+	RestMapper     meta.RESTMapper
 }
 
 // TypeCheckingContext holds information about the policy being type-checked.
@@ -102,18 +102,18 @@ func (r *TypeCheckingResult) String() string {
 // as []ExpressionWarning that is ready to be set in policy.Status
 // The result is nil if type checking returns no warning.
 // The policy object is NOT mutated. The caller should update Status accordingly
-func (c *TypeChecker) Check(policy *v1alpha1.ValidatingAdmissionPolicy) []v1alpha1.ExpressionWarning {
+func (c *TypeChecker) Check(policy *v1beta1.ValidatingAdmissionPolicy) []v1beta1.ExpressionWarning {
 	ctx := c.CreateContext(policy)
 
 	// warnings to return, note that the capacity is optimistically set to zero
-	var warnings []v1alpha1.ExpressionWarning // intentionally not setting capacity
+	var warnings []v1beta1.ExpressionWarning // intentionally not setting capacity
 
 	// check main validation expressions and their message expressions, located in spec.validations[*]
 	fieldRef := field.NewPath("spec", "validations")
 	for i, v := range policy.Spec.Validations {
 		results := c.CheckExpression(ctx, v.Expression)
 		if len(results) != 0 {
-			warnings = append(warnings, v1alpha1.ExpressionWarning{
+			warnings = append(warnings, v1beta1.ExpressionWarning{
 				FieldRef: fieldRef.Index(i).Child("expression").String(),
 				Warning:  results.String(),
 			})
@@ -124,7 +124,7 @@ func (c *TypeChecker) Check(policy *v1alpha1.ValidatingAdmissionPolicy) []v1alph
 		}
 		results = c.CheckExpression(ctx, v.MessageExpression)
 		if len(results) != 0 {
-			warnings = append(warnings, v1alpha1.ExpressionWarning{
+			warnings = append(warnings, v1beta1.ExpressionWarning{
 				FieldRef: fieldRef.Index(i).Child("messageExpression").String(),
 				Warning:  results.String(),
 			})
@@ -135,7 +135,7 @@ func (c *TypeChecker) Check(policy *v1alpha1.ValidatingAdmissionPolicy) []v1alph
 }
 
 // CreateContext resolves all types and their schemas from a policy definition and creates the context.
-func (c *TypeChecker) CreateContext(policy *v1alpha1.ValidatingAdmissionPolicy) *TypeCheckingContext {
+func (c *TypeChecker) CreateContext(policy *v1beta1.ValidatingAdmissionPolicy) *TypeCheckingContext {
 	ctx := new(TypeCheckingContext)
 	allGvks := c.typesToCheck(policy)
 	gvks := make([]schema.GroupVersionKind, 0, len(allGvks))
@@ -196,14 +196,14 @@ func (c *TypeChecker) declType(gvk schema.GroupVersionKind) (*apiservercel.DeclT
 	if gvk.Empty() {
 		return nil, nil
 	}
-	s, err := c.schemaResolver.ResolveSchema(gvk)
+	s, err := c.SchemaResolver.ResolveSchema(gvk)
 	if err != nil {
 		return nil, err
 	}
 	return common.SchemaDeclType(&openapi.Schema{Schema: s}, true).MaybeAssignTypeName(generateUniqueTypeName(gvk.Kind)), nil
 }
 
-func (c *TypeChecker) paramsGVK(policy *v1alpha1.ValidatingAdmissionPolicy) schema.GroupVersionKind {
+func (c *TypeChecker) paramsGVK(policy *v1beta1.ValidatingAdmissionPolicy) schema.GroupVersionKind {
 	if policy.Spec.ParamKind == nil {
 		return schema.GroupVersionKind{}
 	}
@@ -233,7 +233,7 @@ func (c *TypeChecker) checkExpression(expression string, hasParams, hasAuthorize
 
 // typesToCheck extracts a list of GVKs that needs type checking from the policy
 // the result is sorted in the order of Group, Version, and Kind
-func (c *TypeChecker) typesToCheck(p *v1alpha1.ValidatingAdmissionPolicy) []schema.GroupVersionKind {
+func (c *TypeChecker) typesToCheck(p *v1beta1.ValidatingAdmissionPolicy) []schema.GroupVersionKind {
 	gvks := sets.New[schema.GroupVersionKind]()
 	if p.Spec.MatchConstraints == nil || len(p.Spec.MatchConstraints.ResourceRules) == 0 {
 		return nil
@@ -266,7 +266,7 @@ func (c *TypeChecker) typesToCheck(p *v1alpha1.ValidatingAdmissionPolicy) []sche
 						Version:  version,
 						Resource: resource,
 					}
-					resolved, err := c.restMapper.KindsFor(gvr)
+					resolved, err := c.RestMapper.KindsFor(gvr)
 					if err != nil {
 						continue
 					}
@@ -294,7 +294,7 @@ func (c *TypeChecker) typesToCheck(p *v1alpha1.ValidatingAdmissionPolicy) []sche
 	return sortGVKList(gvks.UnsortedList())
 }
 
-func extractGroups(rule *v1alpha1.Rule) []string {
+func extractGroups(rule *v1beta1.Rule) []string {
 	groups := make([]string, 0, len(rule.APIGroups))
 	for _, group := range rule.APIGroups {
 		// give up if wildcard
@@ -306,7 +306,7 @@ func extractGroups(rule *v1alpha1.Rule) []string {
 	return groups
 }
 
-func extractVersions(rule *v1alpha1.Rule) []string {
+func extractVersions(rule *v1beta1.Rule) []string {
 	versions := make([]string, 0, len(rule.APIVersions))
 	for _, version := range rule.APIVersions {
 		if strings.ContainsAny(version, "*") {
@@ -317,7 +317,7 @@ func extractVersions(rule *v1alpha1.Rule) []string {
 	return versions
 }
 
-func extractResources(rule *v1alpha1.Rule) []string {
+func extractResources(rule *v1beta1.Rule) []string {
 	resources := make([]string, 0, len(rule.Resources))
 	for _, resource := range rule.Resources {
 		// skip wildcard and subresources
@@ -347,9 +347,14 @@ func sortGVKList(list []schema.GroupVersionKind) []schema.GroupVersionKind {
 func buildEnv(hasParams bool, hasAuthorizer bool, types typeOverwrite) (*cel.Env, error) {
 	baseEnv := environment.MustBaseEnvSet(environment.DefaultCompatibilityVersion())
 	requestType := plugincel.BuildRequestType()
+	namespaceType := plugincel.BuildNamespaceType()
 
 	var varOpts []cel.EnvOption
 	var declTypes []*apiservercel.DeclType
+
+	// namespace, hand-crafted type
+	declTypes = append(declTypes, namespaceType)
+	varOpts = append(varOpts, createVariableOpts(namespaceType, plugincel.NamespaceVarName)...)
 
 	// request, hand-crafted type
 	declTypes = append(declTypes, requestType)
