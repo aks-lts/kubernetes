@@ -457,8 +457,8 @@
 
 filename | sha512 hash
 -------- | -----------
-[kubernetes.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100.zip) | 728f3ef58c34b337671dd3650b7daf98a6ef3cd2861fc975c1346453285d21f93197cac4d797158db73d4cda578152a17e9de5c235a94f11619e9d498cd4caba
-[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100.tar.gz) | 04fc46392483515f9eccbf6991637a28fa5068a30808e72545f741a399aaf1a5960384b9730f6f1edcb5e226004af89498f57d85c89f03dd35b1ecde203c16e7
+[kubernetes.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
+[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.tar.gz) | 5831a84c6d891411794d1ab108fea194eeb17d1afdf17c8cd6bc0107d31757c9775d28683c75e4b65ca7e4b666349ff0b5957172226d0d1973ec07d261d90768
 
 ## Changelog since v1.24.17
 
