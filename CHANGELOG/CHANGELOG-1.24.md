@@ -1,5 +1,12 @@
 <!-- BEGIN MUNGE: GENERATED_TOC -->
 
+- [v1.24.100](#v124100)
+  - [Downloads for v1.24.100](#downloads-for-v124100)
+    - [Source Code](#source-code)
+  - [Changelog since v1.24.17](#changelog-since-v12417)
+  - [Important Security Information](#important-security-information)
+    - [CVE-2023-39325: HTTP/2 rapid reset can cause excessive work in net/http](#cve-2023-39325-http2-rapid-reset-can-cause-excessive-work-in-nethttp)
+    - [CVE-2023-44487: swift-nio-http2 vulnerable to HTTP/2 Stream Cancellation Attack](#cve-2023-44487-swift-nio-http2-vulnerable-to-http2-stream-cancellation-attack)
 - [v1.24.17](#v12417)
   - [Downloads for v1.24.17](#downloads-for-v12417)
     - [Source Code](#source-code)
@@ -438,6 +445,68 @@
     - [Removed](#removed-24)
 
 <!-- END MUNGE: GENERATED_TOC -->
+
+# v1.24.100
+
+
+## Downloads for v1.24.100
+
+
+
+### Source Code
+
+filename | sha512 hash
+-------- | -----------
+[kubernetes.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
+[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.tar.gz) | 5831a84c6d891411794d1ab108fea194eeb17d1afdf17c8cd6bc0107d31757c9775d28683c75e4b65ca7e4b666349ff0b5957172226d0d1973ec07d261d90768
+
+## Changelog since v1.24.17
+
+## Important Security Information
+
+This release contains changes that address the following vulnerabilities:
+
+### CVE-2023-39325: HTTP/2 rapid reset can cause excessive work in net/http
+
+A security issue was discovered in Kubernetes where a malicious HTTP/2 client which rapidly creates requests and immediately resets them can cause excessive server resource consumption.
+
+**Affected Versions**:
+  - kube-apiserver <= v1.28.2
+  - kube-apiserver <= v1.27.6
+  - kube-apiserver <= v1.26.9
+  - kube-apiserver <= v1.25.14
+  - kube-apiserver <= v1.24.17
+
+**Fixed Versions**:
+  - kube-apiserver v1.28.3
+  - kube-apiserver v1.27.7
+  - kube-apiserver v1.26.10
+  - kube-apiserver v1.25.15
+  - kube-apiserver v1.24.100
+
+**CVSS Rating:** High (7.5) [CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H)
+
+### CVE-2023-44487: swift-nio-http2 vulnerable to HTTP/2 Stream Cancellation Attack
+
+A security issue was discovered in Kubernetes where a malicious client can create and then reset a large number of HTTP/2 streams in a short period of time that easily overwhelm an `EventLoop` and prevent it from making forward progress.
+
+**Affected Versions**:
+  - kube-apiserver <= v1.28.2
+  - kube-apiserver <= v1.27.6
+  - kube-apiserver <= v1.26.9
+  - kube-apiserver <= v1.25.14
+  - kube-apiserver <= v1.24.17
+
+**Fixed Versions**:
+  - kube-apiserver v1.28.3
+  - kube-apiserver v1.27.7
+  - kube-apiserver v1.26.10
+  - kube-apiserver v1.25.15
+  - kube-apiserver v1.24.100
+
+**CVSS Rating:** Moderate (5.3) [CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L)
+
+
 
 # v1.24.17
 
