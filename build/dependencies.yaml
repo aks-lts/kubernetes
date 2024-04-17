@@ -103,7 +103,7 @@ dependencies:
   # This entry is a stub of the major version to allow dependency checks to
   # pass when building Kubernetes using a pre-release of Golang.
   - name: "golang: 1.<major>"
-    version: 1.20
+    version: 1.21
     refPaths:
     - path: build/build-image/cross/VERSION
     # we continue to test in the original go version which was go1.18
