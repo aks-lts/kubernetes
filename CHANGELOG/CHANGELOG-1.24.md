@@ -475,7 +475,7 @@ A security issue was discovered in Kubernetes where users may be able to launch 
   - kube-apiserver v1.29.4
   - kube-apiserver v1.28.9
   - kube-apiserver v1.27.13
-  - kube-apiserver <= v1.24.102
+  - kube-apiserver v1.24.102
 
 This vulnerability was reported by tha3e1vl.
 
