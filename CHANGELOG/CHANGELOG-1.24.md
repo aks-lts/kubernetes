@@ -445,6 +445,62 @@
     - [Removed](#removed-24)
 
 <!-- END MUNGE: GENERATED_TOC -->
+# v1.24.102
+
+## Downloads for v1.24.102
+### Source Code
+
+filename | sha512 hash
+-------- | -----------
+[kubernetes.zip](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.102-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
+[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.102-akslts.tar.gz) | 5831a84c6d891411794d1ab108fea194eeb17d1afdf17c8cd6bc0107d31757c9775d28683c75e4b65ca7e4b666349ff0b5957172226d0d1973ec07d261d90768
+
+## Changelog since v1.24.101
+
+## Important Security Information
+
+This release contains changes that address the following vulnerabilities:
+
+### CVE-2024-3177: Bypassing mountable secrets policy imposed by the ServiceAccount admission plugin
+
+A security issue was discovered in Kubernetes where users may be able to launch containers that bypass the mountable secrets policy enforced by the ServiceAccount admission plugin when using containers, init containers, and ephemeral containers with the envFrom field populated.
+
+**Affected Versions**:
+  - kube-apiserver v1.29.0 - v1.29.3
+  - kube-apiserver v1.28.0 - v1.28.8
+  - kube-apiserver <= v1.27.12
+  - kube-apiserver <= v1.24.101
+
+**Fixed Versions**:
+  - kube-apiserver v1.29.4
+  - kube-apiserver v1.28.9
+  - kube-apiserver v1.27.13
+  - kube-apiserver <= v1.24.102
+
+This vulnerability was reported by tha3e1vl.
+
+**CVSS Rating:** Low (2.7) [CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:N/A:N](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:N/A:N)
+
+
+
+
+# v1.24.102
+
+## Downloads for v1.24.102
+### Source Code
+filename | sha512 hash
+-------- | -----------
+[kubernetes.zip](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.101-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
+[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.101-akslts.tar.gz) | 5831a84c6d891411794d1ab108fea194eeb17d1afdf17c8cd6bc0107d31757c9775d28683c75e4b65ca7e4b666349ff0b5957172226d0d1973ec07d261d90768
+
+## Changelog since v1.24.100
+
+## Dependencies
+
+### Changed
+- github.com/cyphar/filepath-securejoin: [v0.2.3 → v0.2.4](https://github.com/cyphar/filepath-securejoin/compare/v0.2.3...v0.2.4)
+
+
 
 # v1.24.100
 
@@ -457,7 +513,7 @@
 
 filename | sha512 hash
 -------- | -----------
-[kubernetes.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
+[kubernetes.zip](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
 [kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.tar.gz) | 5831a84c6d891411794d1ab108fea194eeb17d1afdf17c8cd6bc0107d31757c9775d28683c75e4b65ca7e4b666349ff0b5957172226d0d1973ec07d261d90768
 
 ## Changelog since v1.24.17
