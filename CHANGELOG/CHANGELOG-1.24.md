@@ -1,5 +1,17 @@
 <!-- BEGIN MUNGE: GENERATED_TOC -->
 
+- [v1.24.102](#v124102)
+   - [Downloads for v1.24.102](#downloads-for-v124102)
+      - [Source Code](#source-code)
+   - [Changelog since v1.24.101](#changelog-since-v124101)
+   - [Important Security Information](#important-security-information)
+      - [CVE-2024-3177: Bypassing mountable secrets policy imposed by the ServiceAccount admission plugin](#cve-2024-3177-bypassing-mountable-secrets-policy-imposed-by-the-serviceaccount-admission-plugin)
+- [v1.24.102](#v124102-1)
+   - [Downloads for v1.24.102](#downloads-for-v124102-1)
+      - [Source Code](#source-code-1)
+   - [Changelog since v1.24.100](#changelog-since-v124100)
+   - [Dependencies](#dependencies)
+      - [Changed](#changed)
 - [v1.24.100](#v124100)
   - [Downloads for v1.24.100](#downloads-for-v124100)
     - [Source Code](#source-code)
@@ -445,6 +457,62 @@
     - [Removed](#removed-24)
 
 <!-- END MUNGE: GENERATED_TOC -->
+# v1.24.102
+
+## Downloads for v1.24.102
+### Source Code
+
+filename | sha512 hash
+-------- | -----------
+[kubernetes.zip](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.102-akslts.zip) | b422bb771d427abadb9d52e2fe83b6b7938294220c6bde34f967504a49c73c5cb9dec633d752f0199e45511dd9e10cbd76609b560f97d7c9a46e06d9ea7e5951
+[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.102-akslts.tar.gz) | 7029409ec091cfbe47a295917b93deee3584b53fd3591a4b7f79fed49820551bf8bd3b07095c2d5faed653836631fe63151f485dc071e03f888a30059cc8822b
+
+## Changelog since v1.24.101
+
+## Important Security Information
+
+This release contains changes that address the following vulnerabilities:
+
+### CVE-2024-3177: Bypassing mountable secrets policy imposed by the ServiceAccount admission plugin
+
+A security issue was discovered in Kubernetes where users may be able to launch containers that bypass the mountable secrets policy enforced by the ServiceAccount admission plugin when using containers, init containers, and ephemeral containers with the envFrom field populated.
+
+**Affected Versions**:
+  - kube-apiserver v1.29.0 - v1.29.3
+  - kube-apiserver v1.28.0 - v1.28.8
+  - kube-apiserver <= v1.27.12
+  - kube-apiserver <= v1.24.101
+
+**Fixed Versions**:
+  - kube-apiserver v1.29.4
+  - kube-apiserver v1.28.9
+  - kube-apiserver v1.27.13
+  - kube-apiserver v1.24.102
+
+This vulnerability was reported by tha3e1vl.
+
+**CVSS Rating:** Low (2.7) [CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:N/A:N](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:L/PR:H/UI:N/S:U/C:L/I:N/A:N)
+
+
+
+
+# v1.24.102
+
+## Downloads for v1.24.102
+### Source Code
+filename | sha512 hash
+-------- | -----------
+[kubernetes.zip](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.101-akslts.zip) | ff75f16d941ea5285527cb14ecb432cff6f09522a3397628e82db0a27c5123bfb6519586ef42f0225f714b925196c6e722cd8ecab421ebdd880beb03ad507949
+[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.101-akslts.tar.gz) | 31ff5317767166cbcd38464fe03fb47574cb9b62c757d2ec6c1087edb33e1e327be050bae0cef6c4bd4f6b7964d5a149f6de11112fbd4e8e7ab08d08643bb7c6
+
+## Changelog since v1.24.100
+
+## Dependencies
+
+### Changed
+- github.com/cyphar/filepath-securejoin: [v0.2.3 → v0.2.4](https://github.com/cyphar/filepath-securejoin/compare/v0.2.3...v0.2.4)
+
+
 
 # v1.24.100
 
@@ -457,7 +525,7 @@
 
 filename | sha512 hash
 -------- | -----------
-[kubernetes.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
+[kubernetes.zip](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.zip) | 8f7b12e36a1dcc87ed3d211c7869110c7fdba99c389a741a8c6ee6f0c5d45e582bebc73cd7995b7ec3caf79ee48b0193f3e717edf12e1cabbc663f192359d16b
 [kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.24.100-akslts.tar.gz) | 5831a84c6d891411794d1ab108fea194eeb17d1afdf17c8cd6bc0107d31757c9775d28683c75e4b65ca7e4b666349ff0b5957172226d0d1973ec07d261d90768
 
 ## Changelog since v1.24.17
