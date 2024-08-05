@@ -12,8 +12,6 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-jizen: dummy PR
 */
 
 package e2e
@@ -66,6 +64,7 @@ import (
 	_ "k8s.io/component-base/logs/testinit"
 )
 
+// TODO(jizen): dummy PR
 const (
 	// namespaceCleanupTimeout is how long to wait for the namespace to be deleted.
 	// If there are any orphaned namespaces to clean up, this test is running
