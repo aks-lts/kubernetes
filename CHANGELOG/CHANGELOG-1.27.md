@@ -1,5 +1,14 @@
 <!-- BEGIN MUNGE: GENERATED_TOC -->
-
+- [v1.27.100-akslts](#v127100-akslts)
+  - [Downloads for v1.27.100-akslts](#downloads-for-v127100-akslts)
+    - [Source Code](#source-code)
+  - [Changelog since v1.27.16](#changelog-since-v12716)
+  - [Important Security Information](#important-security-information)
+    - [CVE-2024-34155: Stack exhaustion in all Parse functions in go/parser](#cve-2024-34155-stack-exhaustion-in-all-parse-functions-in-goparser)
+    - [CVE-2024-34156: stack exhaustion in Decoder.Decode in encoding/gob](#cve-2024-34156-stack-exhaustion-in-decoderdecode-in-encodinggob)
+    - [CVE-2024-34158: go/build/constraint: stack exhaustion in Parse](#cve-2024-34158-gobuildconstraint-stack-exhaustion-in-parse)
+  - [Changes by Kind](#changes-by-kind)
+    - [Feature](#feature)
 - [v1.27.16](#v12716)
   - [Downloads for v1.27.16](#downloads-for-v12716)
     - [Source Code](#source-code)
@@ -399,12 +408,77 @@
 
 <!-- END MUNGE: GENERATED_TOC -->
 
+# v1.27.100-akslts
+
+
+## Downloads for v1.27.100-akslts
+### Source Code
+
+filename | sha512 hash
+-------- | -----------
+[kubernetes.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.27.100-akslts.zip) | c7b887fc9bdddec3b3156caea14a0179328a8c2559e6aa51d27eae4a91d5c5d00a5b9b450a2a660a49a4a76977afb0e9fe918bac5a2505c05e6c367f124b3acc
+[kubernetes-src.tar.gz](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.27.100-akslts.tar.gz) | 4ba2ef56b53e752da379bd0319426a09d0fb6075dfdcd64340bd77898ee723eeef86a8db52d7956e8c698444ef46991b3710b5709a738bd635936b848d13ae2f
+
+## Changelog since v1.27.16
+
+## Important Security Information
+
+### CVE-2024-34155: Stack exhaustion in all Parse functions in go/parser
+
+Calling any of the Parse functions on Go source code which contains deeply nested literals can cause a panic due to stack exhaustion.
+
+**Affected Versions**:
+  - go <= 1.22.6
+  - go = 1.23.0
+
+**Fixed Versions**:
+  - go 1.22.7
+  - go 1.23.1
+
+**CVSS Rating:** Unkown
+
+
+### CVE-2024-34156: stack exhaustion in Decoder.Decode in encoding/gob
+
+Calling Decoder.Decode on a message which contains deeply nested structures can cause a panic due to stack exhaustion. This is a follow-up to CVE-2022-30635.
+
+**Affected Versions**:
+  - go <= 1.22.6
+  - go = 1.23.0
+
+**Fixed Versions**:
+  - go 1.22.7
+  - go 1.23.1
+
+This vulnerability was reported by Md Sakib Anwar of The Ohio State University (anwar.40@osu.edu)
+
+**CVSS Rating:**  High (7.5) [CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H)
+
+
+### CVE-2024-34158: go/build/constraint: stack exhaustion in Parse
+
+Calling Parse on a "// +build" build tag line with deeply nested expressions can cause a panic due to stack exhaustion.
+
+**Affected Versions**:
+  - go <= 1.22.6
+  - go = 1.23.0
+
+**Fixed Versions**:
+  - go 1.22.7
+  - go 1.23.1
+
+**CVSS Rating:** High (7.5) [CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H)
+
+
+## Changes by Kind
+
+### Feature
+- Kubernetes is now built with go 1.22.7 to address CVEs: [CVE-2024-34155](https://github.com/advisories/GHSA-8xfx-rj4p-23jm), [CVE-2024-34156](https://github.com/advisories/GHSA-5fhx-39r8-3jwh), and [CVE-2024-34158](https://github.com/advisories/GHSA-j7vj-rw65-4v26) ([#29](https://github.com/aks-lts/kubernetes/pull/29))
+- Pin go module dependency on rogpeppe/go-internal to v1.12.0 ([#32](https://github.com/aks-lts/kubernetes/pull/32))
+
 # v1.27.16
 
-
 ## Downloads for v1.27.16
-
-
 
 ### Source Code
 
