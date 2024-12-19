@@ -903,6 +903,9 @@ func (r *crdHandler) getOrCreateServingInfoFor(uid types.UID, name string) (*crd
 		if utilfeature.DefaultFeatureGate.Enabled(features.StreamingCollectionEncodingToJSON) {
 			opts = append(opts, serializer.WithStreamingCollectionEncodingToJSON())
 		}
+		if utilfeature.DefaultFeatureGate.Enabled(features.StreamingCollectionEncodingToProtobuf) {
+			opts = append(opts, serializer.WithStreamingCollectionEncodingToProtobuf())
+		}
 		scaleScope.Serializer = serializer.NewCodecFactory(scaleConverter.Scheme(), opts...)
 		scaleScope.Kind = autoscalingv1.SchemeGroupVersion.WithKind("Scale")
 		scaleScope.Namer = handlers.ContextBasedNaming{
