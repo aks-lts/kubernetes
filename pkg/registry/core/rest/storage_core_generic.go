@@ -20,16 +20,19 @@ import (
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apiserver/pkg/authentication/authenticator"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	serverstorage "k8s.io/apiserver/pkg/server/storage"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/client-go/informers"
 	restclient "k8s.io/client-go/rest"
 
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 	api "k8s.io/kubernetes/pkg/apis/core"
+	"k8s.io/kubernetes/pkg/features"
 	configmapstore "k8s.io/kubernetes/pkg/registry/core/configmap/storage"
 	eventstore "k8s.io/kubernetes/pkg/registry/core/event/storage"
 	namespacestore "k8s.io/kubernetes/pkg/registry/core/namespace/storage"
@@ -62,6 +65,14 @@ func (c *GenericConfig) NewRESTStorage(apiResourceConfigSource serverstorage.API
 		Scheme:                       legacyscheme.Scheme,
 		ParameterCodec:               legacyscheme.ParameterCodec,
 		NegotiatedSerializer:         legacyscheme.Codecs,
+	}
+
+	opts := []serializer.CodecFactoryOptionsMutator{}
+	if utilfeature.DefaultFeatureGate.Enabled(features.StreamingCollectionEncodingToJSON) {
+		opts = append(opts, serializer.WithStreamingCollectionEncodingToJSON())
+	}
+	if len(opts) != 0 {
+		apiGroupInfo.NegotiatedSerializer = serializer.NewCodecFactory(legacyscheme.Scheme, opts...)
 	}
 
 	eventStorage, err := eventstore.NewREST(restOptionsGetter, uint64(c.EventTTL.Seconds()))

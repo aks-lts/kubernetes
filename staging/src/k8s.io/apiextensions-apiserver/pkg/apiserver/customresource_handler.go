@@ -44,6 +44,7 @@ import (
 	"k8s.io/apiextensions-apiserver/pkg/crdserverscheme"
 	"k8s.io/apiextensions-apiserver/pkg/registry/customresource"
 	"k8s.io/apiextensions-apiserver/pkg/registry/customresource/tableconvertor"
+	"k8s.io/kubernetes/pkg/features"
 
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -71,6 +72,7 @@ import (
 	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericfilters "k8s.io/apiserver/pkg/server/filters"
+	utilfeature "k8s.io/apiserver/pkg/util/feature"
 	"k8s.io/apiserver/pkg/util/webhook"
 	"k8s.io/apiserver/pkg/warning"
 	"k8s.io/client-go/scale"
@@ -897,7 +899,11 @@ func (r *crdHandler) getOrCreateServingInfoFor(uid types.UID, name string) (*crd
 		scaleScope := *requestScopes[v.Name]
 		scaleConverter := scale.NewScaleConverter()
 		scaleScope.Subresource = "scale"
-		scaleScope.Serializer = serializer.NewCodecFactory(scaleConverter.Scheme())
+		var opts []serializer.CodecFactoryOptionsMutator
+		if utilfeature.DefaultFeatureGate.Enabled(features.StreamingCollectionEncodingToJSON) {
+			opts = append(opts, serializer.WithStreamingCollectionEncodingToJSON())
+		}
+		scaleScope.Serializer = serializer.NewCodecFactory(scaleConverter.Scheme(), opts...)
 		scaleScope.Kind = autoscalingv1.SchemeGroupVersion.WithKind("Scale")
 		scaleScope.Namer = handlers.ContextBasedNaming{
 			Namer:         meta.NewAccessor(),

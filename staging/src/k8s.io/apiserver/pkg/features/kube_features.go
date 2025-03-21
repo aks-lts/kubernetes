@@ -221,6 +221,10 @@ const (
 	// document.
 	StorageVersionHash featuregate.Feature = "StorageVersionHash"
 
+	// owner: @serathius
+	// Allow API server to encode collections item by item, instead of all at once.
+	StreamingCollectionEncodingToJSON featuregate.Feature = "StreamingCollectionEncodingToJSON"
+
 	// owner: @wojtek-t
 	// alpha: v1.15
 	// beta: v1.16
@@ -316,6 +320,8 @@ var defaultKubernetesFeatureGates = map[featuregate.Feature]featuregate.FeatureS
 	WatchFromStorageWithoutResourceVersion: {Default: false, PreRelease: featuregate.Beta},
 
 	InPlacePodVerticalScaling: {Default: false, PreRelease: featuregate.Alpha},
+
+	StreamingCollectionEncodingToJSON: {Default: false, PreRelease: featuregate.Beta},
 
 	WatchList: {Default: false, PreRelease: featuregate.Alpha},
 
