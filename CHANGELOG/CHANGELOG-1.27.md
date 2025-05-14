@@ -2,7 +2,7 @@
 - [v1.27.103-akslts](#v127103-akslts)
   - [Downloads for v1.27.103-akslts](#downloads-for-v127103-akslts)
     - [Source Code](#source-code)
-  - [Changelog since v1.27.103-akslts](#changelog-since-v127103-akslts)
+  - [Changelog since v1.27.102-akslts](#changelog-since-v127102-akslts)
   - [Important Security Information](#important-security-information)
     - [CVE-2025-0426: Node Denial of Service via kubelet Checkpoint API](#cve-2025-0426-node-denial-of-service-via-kubelet-checkpoint-api)
   - [Changes by Kind](#changes-by-kind)
@@ -442,7 +442,7 @@ filename | sha512 hash
 [kubernetes-src.zip](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.27.103-akslts.zip) | d4a42e9da4aacbafbfd82673e41d59d9eec86ea4b506999f68094cc500c3a7aabfcadd7abae19530d42829e4bee3cec6ddd3a711f51c9e8c93ac7fb92251d7a2
 [ ](https://github.com/aks-lts/kubernetes/archive/refs/tags/v1.27.103-akslts.tar.gz) | aff0422448ca4fa9f4536cfba363964b833ac13f37e76d1b3895147ace49180654da96dacb20575527786b25e07de56552011395ca5ccccc450fe5100234d9cd
 
-## Changelog since v1.27.103-akslts
+## Changelog since v1.27.102-akslts
 
 ## Important Security Information
 
