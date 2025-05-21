@@ -106,6 +106,9 @@ while getopts "ar:sng:c:" o; do
   esac
 done
 
+## DEBUG flags
+golangci+=(--verbose --print-resources-usage)
+
 # Below the output of golangci-lint is going to be piped into sed to add
 # a prefix to each output line. This helps make the output more visible
 # in the Prow log viewer ("error" is a key word there) and ensures that
