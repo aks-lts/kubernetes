@@ -107,6 +107,7 @@ while getopts "ar:sng:c:" o; do
 done
 
 ## DEBUG flags
+export LOG_LEVEL=7
 golangci+=(--verbose --print-resources-usage)
 
 # Below the output of golangci-lint is going to be piped into sed to add
