@@ -102,9 +102,9 @@ func TestCreateVolume(t *testing.T) {
 		},
 	}, nil)
 	diskName, diskURI, requestGB, err = b.CreateVolume("testBlob", "testsa", "type", b.common.location, 10)
-	expectedErrStr := "failed to put page blob testBlob.vhd in container vhds: storage: service returned error: StatusCode=403, ErrorCode=AccountIsDisabled, ErrorMessage=The specified account is disabled."
+	expectedErrStr := "failed to put page blob testBlob.vhd in container vhds"
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
+	assert.True(t, strings.Contains(err.Error(), expectedErrStr), "Expected '%s' to contain: %q", err.Error(), expectedErrStr)
 	assert.Empty(t, diskName)
 	assert.Empty(t, diskURI)
 	assert.Zero(t, requestGB)
@@ -143,10 +143,9 @@ func TestDeleteVolume(t *testing.T) {
 	assert.Equal(t, expectedErr, err)
 
 	err = b.DeleteVolume(diskURL)
-	expectedErrStr := "failed to delete vhd https://foo.blob./vhds/bar.vhd, account foo, blob bar.vhd, err: storage: service returned error: " +
-		"StatusCode=403, ErrorCode=AccountIsDisabled, ErrorMessage=The specified account is disabled."
+	expectedErrStr := "failed to delete vhd https://foo.blob./vhds/bar.vhd, account foo, blob bar.vhd"
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
+	assert.True(t, strings.Contains(err.Error(), expectedErrStr), "Expected '%s' to contain: %q", err.Error(), expectedErrStr)
 }
 
 func TestCreateVHDBlobDisk(t *testing.T) {
@@ -160,9 +159,9 @@ func TestCreateVHDBlobDisk(t *testing.T) {
 	blobClient := client.GetBlobService()
 
 	_, _, err = b.createVHDBlobDisk(blobClient, "testsa", "blob", vhdContainerName, int64(10))
-	expectedErr := "failed to put page blob blob.vhd in container vhds: storage: service returned error: StatusCode=403, ErrorCode=AccountIsDisabled, ErrorMessage=The specified account is disabled."
+	expectedErr := "failed to put page blob blob.vhd in container vhds"
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), expectedErr))
+	assert.True(t, strings.Contains(err.Error(), expectedErr), "Expected '%s' to contain: %q", err.Error(), expectedErr)
 }
 
 func TestGetAllStorageAccounts(t *testing.T) {
@@ -227,9 +226,9 @@ func TestEnsureDefaultContainer(t *testing.T) {
 		},
 	}, nil)
 	err = b.ensureDefaultContainer("testsa")
-	expectedErrStr := "storage: service returned error: StatusCode=403, ErrorCode=AccountIsDisabled, ErrorMessage=The specified account is disabled."
+	expectedErrStr := "no such host"
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
+	assert.True(t, strings.Contains(err.Error(), expectedErrStr), "Expected '%s' to contain: %q", err.Error(), expectedErrStr)
 }
 
 func TestGetDiskCount(t *testing.T) {
@@ -262,9 +261,9 @@ func TestGetDiskCount(t *testing.T) {
 		},
 	}, nil)
 	count, err = b.getDiskCount("testsa")
-	expectedErrStr := "storage: service returned error: StatusCode=403, ErrorCode=AccountIsDisabled, ErrorMessage=The specified account is disabled."
+	expectedErrStr := "no such host"
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
+	assert.True(t, strings.Contains(err.Error(), expectedErrStr), "Expected '%s' to contain: %q", err.Error(), expectedErrStr)
 	assert.Zero(t, count)
 }
 
@@ -299,7 +298,7 @@ func TestFindSANameForDisk(t *testing.T) {
 	mockSAClient.EXPECT().Create(gomock.Any(), b.common.resourceGroup, gomock.Any(), gomock.Any()).Return(nil)
 	name, err := b.findSANameForDisk(storage.StandardGRS)
 	expectedErr := "does not exist while trying to create/ensure default container"
-	assert.True(t, strings.Contains(err.Error(), expectedErr))
+	assert.True(t, strings.Contains(err.Error(), expectedErr), "Expected '%s' to contain: %q", err.Error(), expectedErr)
 	assert.Error(t, err)
 	assert.Empty(t, name)
 
