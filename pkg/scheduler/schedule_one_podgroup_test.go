@@ -1038,10 +1038,12 @@ func TestSubmitPodGroupAlgorithmResult(t *testing.T) {
 				},
 			}
 			waitingPods := frameworkruntime.NewWaitingPodsMap()
+			podInPreBind := frameworkruntime.NewPodsInPreBindMap()
 			schedFwk, err := frameworkruntime.NewFramework(ctx, registry, &profileCfg,
 				frameworkruntime.WithClientSet(client),
 				frameworkruntime.WithEventRecorder(events.NewFakeRecorder(100)),
 				frameworkruntime.WithWaitingPods(waitingPods),
+				frameworkruntime.WithPodsInPreBind(podInPreBind),
 			)
 			if err != nil {
 				t.Fatalf("Failed to create new framework: %v", err)
