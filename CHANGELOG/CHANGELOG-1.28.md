@@ -4,6 +4,7 @@
     - [Source Code](#source-code)
   - [Changelog since v1.28.102-akslts](#changelog-since-v128102-akslts)
   - [Important Security Information](#important-security-information)
+    - [CVE-2025-13281: Portworx Half-Blind SSRF in kube-controller-manager](#cve-2025-13281-portworx-half-blind-ssrf-in-kube-controller-manager)
   - [Changes by Kind](#changes-by-kind)
     - [Bug or Regression](#bug-or-regression)
 - [v1.28.102-akslts](#v128102-akslts)
@@ -455,7 +456,7 @@ Upstream tracking: [[kubernetes/kubernetes#135525]](https://github.com/kubernete
 ## Changes by Kind
 ### Bug or Regression
 
-- Cherry pick #135525 on release-1.28 to Clean up event messages for errors in Portworx in-tree driver ([#76](https://github.com/aks-lts/kubernetes/pull/76))
+- Cherry pick #135525 on release-1.28 to clean up event messages for errors in Portworx in-tree driver ([#76](https://github.com/aks-lts/kubernetes/pull/76))
 
 
 # v1.28.102-akslts
