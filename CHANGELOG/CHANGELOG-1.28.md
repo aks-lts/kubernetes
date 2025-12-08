@@ -437,12 +437,25 @@ filename | sha512 hash
 
 This release contains changes that address the following vulnerabilities:
 
+### CVE-2025-13281: Portworx Half-Blind SSRF in kube-controller-manager
+
+A half-blind Server Side Request Forgery (SSRF) vulnerability exists in kube-controller-manager when using the in-tree Portworx StorageClass. This was patched for other in-tree StorageClasses (GlusterFS, Quobyte, StorageOS, and ScaleIO) as part of CVE-2020-8555. This vulnerability allows authorized users to leak arbitrary information from unprotected endpoints in the control plane’s host network (including link-local or loopback services).
+
+An attacker with permissions to create a pod using the built-in Portworx StorageClass can cause kube-controller-manager to make GET requests (without an attacker controlled request body) from within the control plane’s host network and make the corresponding HTTP response body visible as part of event objects created by kube-controller-manager.
+
+The in-tree Portworx StorageClass has been disabled by default starting in version v1.31 from the CSIMigrationPortworx feature gate. As a result, currently supported versions greater than or equal to v1.32 are not impacted unless the CSIMigrationPortworx feature gate is disabled with an override.
+
+The issue was fixed and coordinated by Ankit Gohil @gohilankit
+
+**CVSS Rating:** Medium (5.8) [CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:C/C:H/I:N/A:N](https://www.first.org/cvss/calculator/3-1#CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:C/C:H/I:N/A:N)
+
+Upstream tracking: [[kubernetes/kubernetes#135525]](https://github.com/kubernetes/kubernetes/issues/135525)
 
 
 ## Changes by Kind
 ### Bug or Regression
 
-- Clean up event messages for errors in Portworx in-tree driver ([#76](https://github.com/aks-lts/kubernetes/pull/76))
+- Cherry pick #135525 on release-1.28 to Clean up event messages for errors in Portworx in-tree driver ([#76](https://github.com/aks-lts/kubernetes/pull/76))
 
 
 # v1.28.102-akslts
