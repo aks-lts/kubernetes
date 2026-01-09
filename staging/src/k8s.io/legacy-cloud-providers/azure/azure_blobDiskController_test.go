@@ -232,7 +232,7 @@ func TestEnsureDefaultContainer(t *testing.T) {
 	err = b.ensureDefaultContainer("testsa")
 	expectedErrStr := "no such host"
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr), fmt.Sprintf("Expect \"%s\" to contain \"%s\".", expectedErrStr))
+	assert.True(t, strings.Contains(err.Error(), expectedErrStr), fmt.Sprintf("Expect \"%s\" to contain \"%s\".", err.Error(), expectedErrStr))
 }
 
 func TestGetDiskCount(t *testing.T) {
