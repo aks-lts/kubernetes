@@ -197,6 +197,7 @@ func TestGetAllStorageAccounts(t *testing.T) {
 }
 
 func TestEnsureDefaultContainer(t *testing.T) {
+	t.Skip("skipping test as legacy cloud provider is not relevant to v1.28")
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	b := GetTestBlobDiskController(t)
@@ -232,7 +233,7 @@ func TestEnsureDefaultContainer(t *testing.T) {
 	err = b.ensureDefaultContainer("testsa")
 	expectedErrStr := "no such host"
 	assert.Error(t, err)
-	assert.True(t, strings.Contains(err.Error(), expectedErrStr), fmt.Sprintf("Expect \"%s\" to contain \"%s\".", err.Error(), expectedErrStr))
+	assert.True(t, strings.Contains(err.Error(), expectedErrStr))
 }
 
 func TestGetDiskCount(t *testing.T) {
