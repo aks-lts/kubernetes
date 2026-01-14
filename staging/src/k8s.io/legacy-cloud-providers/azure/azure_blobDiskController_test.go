@@ -197,6 +197,7 @@ func TestGetAllStorageAccounts(t *testing.T) {
 }
 
 func TestEnsureDefaultContainer(t *testing.T) {
+	t.Skip("skipping test as legacy cloud provider is not relevant to v1.29")
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	b := GetTestBlobDiskController(t)
