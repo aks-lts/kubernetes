@@ -2291,6 +2291,14 @@ func (kl *Kubelet) convertToAPIContainerStatuses(ctx context.Context, pod *v1.Po
 				if oldStatus.RestartCount > status.RestartCount {
 					status.RestartCount = oldStatus.RestartCount
 				}
+				// Normal container restarts preserve the old container in the runtime so kubelet
+				// can query its termination status. RestartAllContainers removes old containers,
+				// so we must manually propagate LastTerminationState when the container ID changes.
+				if oldStatus.ContainerID != status.ContainerID && oldStatus.State.Terminated != nil {
+					status.LastTerminationState.Terminated = oldStatus.State.Terminated
+				} else if oldStatus.LastTerminationState.Terminated != nil {
+					status.LastTerminationState.Terminated = oldStatus.LastTerminationState.Terminated
+				}
 			}
 		}
 		if utilfeature.DefaultFeatureGate.Enabled(features.ImageVolumeWithDigest) && imageVolumeNames.Len() > 0 {
