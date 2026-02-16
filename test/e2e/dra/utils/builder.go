@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -44,24 +43,16 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kubernetes/test/e2e/dra/test-driver/app"
 	"k8s.io/kubernetes/test/e2e/framework"
-	e2enode "k8s.io/kubernetes/test/e2e/framework/node"
 	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
 	"k8s.io/kubernetes/test/utils/ktesting"
 	admissionapi "k8s.io/pod-security-admission/api"
 	"k8s.io/utils/ptr"
 )
 
-// ExtendedResourceName returns hard coded extended resource name with a variable
-// suffix from the input integer when it's greater than or equal to 0.
-// i == -1 == SingletonIndex is special, the extended resource name has no extra suffix
-// and matches the one used by the example device plugin.
-func (b *Builder) ExtendedResourceName(i int) string {
-	switch i {
-	case SingletonIndex:
-		return e2enode.SampleDeviceResourceName
-	default:
-		return b.Driver.Name + "/resource" + fmt.Sprintf("-%d", i)
-	}
+// ExtendedResourceName returns extended resource name with a variable suffix.
+// Example: b.ExtendedResourceName("gpu") returns "driver-name/resource-gpu"
+func (b *Builder) ExtendedResourceName(suffix string) string {
+	return b.Driver.Name + "/resource-" + suffix
 }
 
 // Builder contains a running counter to make objects unique within their
@@ -77,41 +68,25 @@ type Builder struct {
 	SkipCleanup     bool
 }
 
+// DeviceClassWrapper is a wrapper around DeviceClass that allows
+// adding builder-style functions that modify the class before creation.
+type DeviceClassWrapper struct {
+	*resourceapi.DeviceClass
+}
+
 // ClassName returns the default device class name.
 func (b *Builder) ClassName() string {
 	return b.namespace + b.Driver.NameSuffix + "-class"
 }
 
-// SingletonIndex causes Builder.Class and ExtendedResourceName to create a
-// DeviceClass where the the extended resource name has no %d
-// suffix and matches the name as used by the example device plugin.
-const SingletonIndex = -1
-
 // Class returns the device Class that the builder's other objects
 // reference.
-// The input i is used to pick the extended resource name whose suffix has the
-// same i for the device class.
-// i == -1 == SingletonIndex is special, the extended resource name has no extra suffix.
-func (b *Builder) Class(i int) *resourceapi.DeviceClass {
-	ern := b.ExtendedResourceName(i)
+func (b *Builder) Class() *DeviceClassWrapper {
 	name := b.ClassName()
-	switch i {
-	case SingletonIndex:
-		name += "-singleton"
-	case 0:
-		// No numeric suffix. This is what most tests use.
-	default:
-		name += "-" + strconv.Itoa(i)
-	}
 	class := &resourceapi.DeviceClass{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
-	}
-	if b.UseExtendedResourceName {
-		class.Spec = resourceapi.DeviceClassSpec{
-			ExtendedResourceName: &ern,
-		}
 	}
 	class.Spec.Selectors = []resourceapi.DeviceSelector{{
 		CEL: &resourceapi.CELDeviceSelector{
@@ -128,7 +103,26 @@ func (b *Builder) Class(i int) *resourceapi.DeviceClass {
 			},
 		}}
 	}
-	return class
+	return &DeviceClassWrapper{DeviceClass: class}
+}
+
+// ClassWithExtendedResource returns a device class with the extended resource name set to the provided value.
+// The class name is suffixed with the last part of the extended resource name to make it unique.
+func (b *Builder) ClassWithExtendedResource(extendedResource string) *resourceapi.DeviceClass {
+	suffix := extendedResource[strings.LastIndex(extendedResource, "/")+1:]
+	return b.Class().WithName(b.ClassName() + "-" + suffix).WithExtendedResource(extendedResource).DeviceClass
+}
+
+// WithName sets the name of the device class.
+func (dcw *DeviceClassWrapper) WithName(name string) *DeviceClassWrapper {
+	dcw.ObjectMeta.Name = name
+	return dcw
+}
+
+// WithExtendedResource sets the extended resource name of the device class.
+func (dcw *DeviceClassWrapper) WithExtendedResource(extendedResourceName string) *DeviceClassWrapper {
+	dcw.Spec.ExtendedResourceName = &extendedResourceName
+	return dcw
 }
 
 // ExternalClaim returns external resource claim
@@ -490,7 +484,7 @@ func (b *Builder) setUp(tCtx ktesting.TContext) {
 	b.namespace = tCtx.Namespace()
 	b.podCounter = 0
 	b.claimCounter = 0
-	b.Create(tCtx, b.Class(0))
+	b.Create(tCtx, b.Class().DeviceClass)
 	tCtx.CleanupCtx(b.tearDown)
 }
 
