@@ -57,7 +57,8 @@ func testShareResourceClaimSequentially(tCtx ktesting.TContext) {
 	b := drautils.NewBuilderNow(tCtx, driver)
 
 	var objects []klog.KMetadata
-	objects = append(objects, b.ExternalClaim())
+	claim := b.ExternalClaim()
+	objects = append(objects, claim)
 
 	// This test used to test usage of the claim by one pod
 	// at a time. After removing the "not sharable"
@@ -67,7 +68,7 @@ func testShareResourceClaimSequentially(tCtx ktesting.TContext) {
 	tCtx.Logf("Creating %d pods sharing the same claim", numMaxPods)
 	pods := make([]*v1.Pod, numMaxPods)
 	for i := range numMaxPods {
-		pod := b.PodExternal()
+		pod := b.PodExternal(claim.Name)
 		pods[i] = pod
 		objects = append(objects, pod)
 	}
@@ -130,7 +131,7 @@ func testShareResourceClaimSequentially(tCtx ktesting.TContext) {
 	morePods := make([]*v1.Pod, numMorePods)
 	objects = nil
 	for i := range numMorePods {
-		pod := b.PodExternal()
+		pod := b.PodExternal(claim.Name)
 		morePods[i] = pod
 		objects = append(objects, pod)
 	}
