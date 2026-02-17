@@ -75,24 +75,28 @@ func testShareResourceClaimSequentially(tCtx ktesting.TContext) {
 
 	podStartTimeout := 5 * time.Minute * time.Duration(numMaxPods)
 	ensureDuration := time.Minute // Don't check for too long, even if it is less precise.
-	podIsScheduled := gomega.HaveField("Spec.NodeName", gomega.Not(gomega.BeEmpty()))
-	podIsPending := gomega.And(
-		gomega.HaveField("Status.Phase", gomega.Equal(v1.PodPending)),
-		gomega.HaveField("Status.Conditions", gomega.ContainElement(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
-			"Type":   gomega.Equal(v1.PodScheduled),
-			"Status": gomega.Equal(v1.ConditionFalse),
-			// With the current scheduler code, creating too many pods is treated as an error,
-			// so this would have to be "SchedulerError". Maybe it shouldn't be an error?
-			// "Reason": gomega.Equal(v1.PodReasonUnschedulable),
-		}))),
-	)
+	podIsScheduled := func() gomega.OmegaMatcher {
+		return gomega.HaveField("Spec.NodeName", gomega.Not(gomega.BeEmpty()))
+	}
+	podIsPending := func() gomega.OmegaMatcher {
+		return gomega.And(
+			gomega.HaveField("Status.Phase", gomega.Equal(v1.PodPending)),
+			gomega.HaveField("Status.Conditions", gomega.ContainElement(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+				"Type":   gomega.Equal(v1.PodScheduled),
+				"Status": gomega.Equal(v1.ConditionFalse),
+				// With the current scheduler code, creating too many pods is treated as an error,
+				// so this would have to be "SchedulerError". Maybe it shouldn't be an error?
+				// "Reason": gomega.Equal(v1.PodReasonUnschedulable),
+			}))),
+		)
+	}
 	assertPodScheduledEventually := func(tCtx ktesting.TContext, pod *v1.Pod) {
 		tCtx.Helper()
 		tCtx.AssertEventually(tCtx.Client().CoreV1().Pods(pod.Namespace).Get).
 			WithArguments(pod.Name, metav1.GetOptions{}).
 			WithTimeout(podStartTimeout).
 			WithPolling(10*time.Second).
-			Should(podIsScheduled, "Pod %s should get scheduled.", pod.Name)
+			Should(podIsScheduled(), "Pod %s should get scheduled.", pod.Name)
 	}
 
 	assertPodPendingEventually := func(tCtx ktesting.TContext, pod *v1.Pod) {
@@ -101,7 +105,7 @@ func testShareResourceClaimSequentially(tCtx ktesting.TContext) {
 			WithArguments(pod.Name, metav1.GetOptions{}).
 			WithTimeout(ensureDuration).
 			WithPolling(10*time.Second).
-			Should(podIsPending, "Pod %s should remain pending.", pod.Name)
+			Should(podIsPending(), "Pod %s should remain pending.", pod.Name)
 	}
 
 	// We don't know the order. All that matters is that all of them get scheduled eventually.
