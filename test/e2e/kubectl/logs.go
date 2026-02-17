@@ -296,8 +296,8 @@ var _ = SIGDescribe("Kubectl logs", func() {
 				podOne := pods.Items[0].GetName()
 				podTwo := pods.Items[1].GetName()
 
-				ginkgo.By("sleep 1s to wait for log generator produce data after pods get ready")
-				time.Sleep(time.Second)
+				ginkgo.By("sleep 3s to wait for log generator produce data after pods get ready")
+				time.Sleep(3 * time.Second)
 
 				ginkgo.By("expecting logs from the default container from both pods in a deployment")
 				out := e2ekubectl.RunKubectlOrDie(ns, "logs", fmt.Sprintf("deploy/%s", deployName), "--all-pods")
@@ -318,8 +318,8 @@ var _ = SIGDescribe("Kubectl logs", func() {
 				podOne := pods.Items[0].GetName()
 				podTwo := pods.Items[1].GetName()
 
-				ginkgo.By("sleep 1s to wait for log generator produce data after pods get ready")
-				time.Sleep(time.Second)
+				ginkgo.By("sleep 3s to wait for log generator produce data after pods get ready")
+				time.Sleep(3 * time.Second)
 
 				ginkgo.By("expecting logs from all containers from both pods in a deployment")
 				out := e2ekubectl.RunKubectlOrDie(ns, "logs", fmt.Sprintf("deploy/%s", deployName), "--all-pods", "--all-containers")
