@@ -243,7 +243,6 @@ spec:
             - "--v=5"
             - "--endpoint=$(CSI_ENDPOINT)"
             - "--nodeid=$(KUBE_NODE_NAME)"
-            - "--enable-snapshot-metadata"
             # end hostpath args
           env:
             - name: CSI_ENDPOINT
