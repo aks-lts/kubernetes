@@ -28,7 +28,6 @@ import (
 	"k8s.io/apiserver/pkg/util/compatibility"
 	basecompatibility "k8s.io/component-base/compatibility"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
-	"k8s.io/kubernetes/pkg/apis/admissionregistration"
 	"k8s.io/kubernetes/pkg/apis/apps"
 	"k8s.io/kubernetes/pkg/apis/certificates"
 	"k8s.io/kubernetes/pkg/apis/coordination"
@@ -81,8 +80,6 @@ func NewStorageFactoryConfigEffectiveVersion(effectiveVersion basecompatibility.
 		// TODO (https://github.com/kubernetes/kubernetes/issues/108451): remove the override in 1.25.
 		// apisstorage.Resource("csistoragecapacities").WithVersion("v1beta1"),
 		coordination.Resource("leasecandidates").WithVersion("v1beta1"),
-		admissionregistration.Resource("mutatingadmissionpolicies").WithVersion("v1beta1"),
-		admissionregistration.Resource("mutatingadmissionpolicybindings").WithVersion("v1beta1"),
 		certificates.Resource("clustertrustbundles").WithVersion("v1beta1"),
 		certificates.Resource("podcertificaterequests").WithVersion("v1beta1"),
 		storagemigration.Resource("storagemigrations").WithVersion("v1beta1"),
