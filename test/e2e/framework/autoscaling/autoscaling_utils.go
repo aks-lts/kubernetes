@@ -51,7 +51,6 @@ import (
 	e2edebug "k8s.io/kubernetes/test/e2e/framework/debug"
 	e2eendpointslice "k8s.io/kubernetes/test/e2e/framework/endpointslice"
 	e2ekubectl "k8s.io/kubernetes/test/e2e/framework/kubectl"
-	e2erc "k8s.io/kubernetes/test/e2e/framework/rc"
 	e2eresource "k8s.io/kubernetes/test/e2e/framework/resource"
 	e2eservice "k8s.io/kubernetes/test/e2e/framework/service"
 	testutils "k8s.io/kubernetes/test/utils"
@@ -88,12 +87,10 @@ const (
 )
 
 var (
-	// KindRC is the GVK for ReplicationController
-	KindRC = schema.GroupVersionKind{Version: "v1", Kind: "ReplicationController"}
 	// KindDeployment is the GVK for Deployment
-	KindDeployment = schema.GroupVersionKind{Group: "apps", Version: "v1beta2", Kind: "Deployment"}
+	KindDeployment = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "Deployment"}
 	// KindReplicaSet is the GVK for ReplicaSet
-	KindReplicaSet = schema.GroupVersionKind{Group: "apps", Version: "v1beta2", Kind: "ReplicaSet"}
+	KindReplicaSet = schema.GroupVersionKind{Group: "apps", Version: "v1", Kind: "ReplicaSet"}
 	// KindCRD is the GVK for CRD for test purposes
 	KindCRD = schema.GroupVersionKind{Group: crdGroup, Version: crdVersion, Kind: crdKind}
 )
@@ -640,12 +637,6 @@ func (rc *ResourceConsumer) sendConsumeCustomMetric(ctx context.Context, delta i
 // GetReplicas get the replicas
 func (rc *ResourceConsumer) GetReplicas(ctx context.Context) (int, error) {
 	switch rc.kind {
-	case KindRC:
-		replicationController, err := rc.clientSet.CoreV1().ReplicationControllers(rc.nsName).Get(ctx, rc.name, metav1.GetOptions{})
-		if err != nil {
-			return 0, err
-		}
-		return int(replicationController.Status.ReadyReplicas), nil
 	case KindDeployment:
 		deployment, err := rc.clientSet.AppsV1().Deployments(rc.nsName).Get(ctx, rc.name, metav1.GetOptions{})
 		if err != nil {
@@ -758,7 +749,7 @@ func (rc *ResourceConsumer) CleanUp(ctx context.Context) {
 	}
 
 	framework.ExpectNoError(rc.clientSet.CoreV1().Services(rc.nsName).Delete(ctx, rc.name, metav1.DeleteOptions{}))
-	framework.ExpectNoError(e2eresource.DeleteResourceAndWaitForGC(ctx, rc.clientSet, schema.GroupKind{Kind: "ReplicationController"}, rc.nsName, rc.controllerName))
+	framework.ExpectNoError(e2eresource.DeleteResourceAndWaitForGC(ctx, rc.clientSet, schema.GroupKind{Group: "apps", Kind: "ReplicaSet"}, rc.nsName, rc.controllerName))
 	framework.ExpectNoError(rc.clientSet.CoreV1().Services(rc.nsName).Delete(ctx, rc.name+"-ctrl", metav1.DeleteOptions{}))
 	// Cleanup sidecar related resources
 	if rc.sidecarStatus == Enable && rc.sidecarType == Busy {
@@ -862,18 +853,20 @@ func runServiceAndSidecarForResourceConsumer(ctx context.Context, c clientset.In
 	framework.ExpectNoError(err)
 
 	dnsClusterFirst := v1.DNSClusterFirst
-	controllerRcConfig := testutils.RCConfig{
-		Client:    c,
-		Image:     imageutils.GetE2EImage(imageutils.Agnhost),
-		Name:      controllerName,
-		Namespace: ns,
-		Timeout:   timeoutRC,
-		Replicas:  1,
-		Command:   []string{"/agnhost", "resource-consumer-controller", "--consumer-service-name=" + sidecarName, "--consumer-service-namespace=" + ns, "--consumer-port=80"},
-		DNSPolicy: &dnsClusterFirst,
+	controllerRsConfig := testutils.ReplicaSetConfig{
+		RCConfig: testutils.RCConfig{
+			Client:    c,
+			Image:     imageutils.GetE2EImage(imageutils.Agnhost),
+			Name:      controllerName,
+			Namespace: ns,
+			Timeout:   timeoutRC,
+			Replicas:  1,
+			Command:   []string{"/agnhost", "resource-consumer-controller", "--consumer-service-name=" + sidecarName, "--consumer-service-namespace=" + ns, "--consumer-port=80"},
+			DNSPolicy: &dnsClusterFirst,
+		},
 	}
 
-	framework.ExpectNoError(e2erc.RunRC(ctx, controllerRcConfig))
+	framework.ExpectNoError(runReplicaSet(ctx, controllerRsConfig))
 	// Wait for endpoints to propagate for the controller service.
 	framework.ExpectNoError(e2eendpointslice.WaitForEndpointCount(
 		ctx, c, ns, controllerName, 1))
@@ -909,8 +902,6 @@ func runServiceAndWorkloadForResourceConsumer(ctx context.Context, c clientset.I
 	dpConfig.ContainerDumpFunc = e2ekubectl.LogFailedContainers
 
 	switch kind {
-	case KindRC:
-		framework.ExpectNoError(e2erc.RunRC(ctx, rcConfig))
 	case KindDeployment:
 		ginkgo.By(fmt.Sprintf("Creating deployment %s in namespace %s", dpConfig.Name, dpConfig.Namespace))
 		framework.ExpectNoError(testutils.RunDeployment(ctx, dpConfig))
@@ -948,18 +939,20 @@ func runServiceAndWorkloadForResourceConsumer(ctx context.Context, c clientset.I
 	framework.ExpectNoError(err)
 
 	dnsClusterFirst := v1.DNSClusterFirst
-	controllerRcConfig := testutils.RCConfig{
-		Client:    c,
-		Image:     imageutils.GetE2EImage(imageutils.Agnhost),
-		Name:      controllerName,
-		Namespace: ns,
-		Timeout:   timeoutRC,
-		Replicas:  1,
-		Command:   []string{"/agnhost", "resource-consumer-controller", "--consumer-service-name=" + name, "--consumer-service-namespace=" + ns, "--consumer-port=80"},
-		DNSPolicy: &dnsClusterFirst,
+	controllerRsConfig := testutils.ReplicaSetConfig{
+		RCConfig: testutils.RCConfig{
+			Client:    c,
+			Image:     imageutils.GetE2EImage(imageutils.Agnhost),
+			Name:      controllerName,
+			Namespace: ns,
+			Timeout:   timeoutRC,
+			Replicas:  1,
+			Command:   []string{"/agnhost", "resource-consumer-controller", "--consumer-service-name=" + name, "--consumer-service-namespace=" + ns, "--consumer-port=80"},
+			DNSPolicy: &dnsClusterFirst,
+		},
 	}
 
-	framework.ExpectNoError(e2erc.RunRC(ctx, controllerRcConfig))
+	framework.ExpectNoError(runReplicaSet(ctx, controllerRsConfig))
 	// Wait for endpoints to propagate for the controller service.
 	framework.ExpectNoError(e2eendpointslice.WaitForEndpointCount(
 		ctx, c, ns, controllerName, 1))
