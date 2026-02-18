@@ -362,6 +362,7 @@ func CreateConfig(
 	genericAdmissionConfig := controlplaneadmission.Config{
 		ExternalInformers:    versionedInformers,
 		LoopbackClientConfig: genericConfig.LoopbackClientConfig,
+		APIResourceConfig:    storageFactory.APIResourceConfigSource,
 	}
 	genericInitializers, err := genericAdmissionConfig.New(proxyTransport, genericConfig.EgressSelector, serviceResolver, genericConfig.TracerProvider)
 	if err != nil {
