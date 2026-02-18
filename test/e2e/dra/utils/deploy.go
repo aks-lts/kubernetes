@@ -687,20 +687,23 @@ func (d *Driver) SetUp(tCtx ktesting.TContext, kubeletRootDir string, nodes *Nod
 		d.cleanup = append(d.cleanup, func(tCtx ktesting.TContext) {
 			// Depends on cancel being called first.
 			plugin.Stop()
-
-			// Also explicitly stop all pods.
-			tCtx.Log("scaling down driver proxy pods for", d.Name)
-			rs, err := tCtx.Client().AppsV1().ReplicaSets(tCtx.Namespace()).Get(tCtx, rsName, metav1.GetOptions{})
-			tCtx.ExpectNoError(err, "get ReplicaSet for driver "+d.Name)
-			rs.Spec.Replicas = ptr.To(int32(0))
-			rs, err = tCtx.Client().AppsV1().ReplicaSets(tCtx.Namespace()).Update(tCtx, rs, metav1.UpdateOptions{})
-			tCtx.ExpectNoError(err, "scale down ReplicaSet for driver "+d.Name)
-			if err := e2ereplicaset.WaitForReplicaSetTargetAvailableReplicas(tCtx, tCtx.Client(), rs, 0); err != nil {
-				tCtx.ExpectNoError(err, "all kubelet plugin proxies stopped")
-			}
 		})
 		d.Nodes[nodename] = KubeletPlugin{ExamplePlugin: plugin, ClientSet: driverClient}
 	}
+
+	// Scale down the proxy ReplicaSet after all per-node plugins have
+	// been stopped.
+	d.cleanup = append(d.cleanup, func(tCtx ktesting.TContext) {
+		tCtx.Log("scaling down driver proxy pods for", d.Name)
+		rs, err := tCtx.Client().AppsV1().ReplicaSets(tCtx.Namespace()).Get(tCtx, rsName, metav1.GetOptions{})
+		tCtx.ExpectNoError(err, "get ReplicaSet for driver "+d.Name)
+		rs.Spec.Replicas = ptr.To(int32(0))
+		rs, err = tCtx.Client().AppsV1().ReplicaSets(tCtx.Namespace()).Update(tCtx, rs, metav1.UpdateOptions{})
+		tCtx.ExpectNoError(err, "scale down ReplicaSet for driver "+d.Name)
+		if err := e2ereplicaset.WaitForReplicaSetTargetAvailableReplicas(tCtx, tCtx.Client(), rs, 0); err != nil {
+			tCtx.ExpectNoError(err, "all kubelet plugin proxies stopped")
+		}
+	})
 
 	if !d.WithKubelet {
 		return
