@@ -31,21 +31,22 @@ var podsGVR = schema.GroupVersionResource{Group: "", Version: "v1", Resource: "p
 
 func TestRealFIFO_Metrics(t *testing.T) {
 	tests := []struct {
-		name           string
-		actions        []func(f *cache.RealFIFO)
-		expectedMetric int
+		name                        string
+		actions                     []func(f *cache.RealFIFO)
+		expectedQueuedItems         int
+		expectedLatencyObservations uint64
 	}{
 		{
-			name:           "empty queue has zero metric",
-			actions:        []func(f *cache.RealFIFO){},
-			expectedMetric: 0,
+			name:                "empty queue has zero metric",
+			actions:             []func(f *cache.RealFIFO){},
+			expectedQueuedItems: 0,
 		},
 		{
 			name: "Add increases metric",
 			actions: []func(f *cache.RealFIFO){
 				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("foo", 1)) },
 			},
-			expectedMetric: 1,
+			expectedQueuedItems: 1,
 		},
 		{
 			name: "multiple Adds increase metric",
@@ -54,7 +55,7 @@ func TestRealFIFO_Metrics(t *testing.T) {
 				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("bar", 2)) },
 				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("baz", 3)) },
 			},
-			expectedMetric: 3,
+			expectedQueuedItems: 3,
 		},
 		{
 			name: "Update increases metric",
@@ -62,7 +63,7 @@ func TestRealFIFO_Metrics(t *testing.T) {
 				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("foo", 1)) },
 				func(f *cache.RealFIFO) { _ = f.Update(mkFifoObj("foo", 2)) },
 			},
-			expectedMetric: 2,
+			expectedQueuedItems: 2,
 		},
 		{
 			name: "Delete increases metric",
@@ -70,10 +71,10 @@ func TestRealFIFO_Metrics(t *testing.T) {
 				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("foo", 1)) },
 				func(f *cache.RealFIFO) { _ = f.Delete(mkFifoObj("foo", 2)) },
 			},
-			expectedMetric: 2,
+			expectedQueuedItems: 2,
 		},
 		{
-			name: "Pop decreases metric",
+			name: "Pop decreases metric and records latency",
 			actions: []func(f *cache.RealFIFO){
 				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("foo", 1)) },
 				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("bar", 2)) },
@@ -81,7 +82,24 @@ func TestRealFIFO_Metrics(t *testing.T) {
 					_, _ = f.Pop(func(obj interface{}, isInInitialList bool) error { return nil })
 				},
 			},
-			expectedMetric: 1,
+			expectedQueuedItems:         1,
+			expectedLatencyObservations: 1,
+		},
+		{
+			name: "PopBatch decreases metric and records latency",
+			actions: []func(f *cache.RealFIFO){
+				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("foo", 1)) },
+				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("bar", 2)) },
+				func(f *cache.RealFIFO) { _ = f.Add(mkFifoObj("baz", 3)) },
+				func(f *cache.RealFIFO) {
+					_ = f.PopBatch(
+						func(deltas []cache.Delta, isInInitialList bool) error { return nil },
+						func(obj interface{}, isInInitialList bool) error { return nil },
+					)
+				},
+			},
+			expectedQueuedItems:         0,
+			expectedLatencyObservations: 1,
 		},
 		{
 			name: "Replace sets metric to new count",
@@ -95,7 +113,7 @@ func TestRealFIFO_Metrics(t *testing.T) {
 				},
 			},
 			// 1 (Add) + 1 (Delete for "old") + 2 (Replace items) = 4
-			expectedMetric: 4,
+			expectedQueuedItems: 4,
 		},
 	}
 
@@ -120,13 +138,11 @@ func TestRealFIFO_Metrics(t *testing.T) {
 				action(f)
 			}
 
-			want := fmt.Sprintf(`# HELP informer_queued_items [ALPHA] Number of items currently queued in the FIFO.
-# TYPE informer_queued_items gauge
-informer_queued_items{group="",name="test-fifo",resource="pods",version="v1"} %d
-`, tt.expectedMetric)
-			if err := testutil.GatherAndCompare(metricsProvider.registry, strings.NewReader(want), "informer_queued_items"); err != nil {
-				t.Fatal(err)
-			}
+			// Verify queued items metric
+			verifyQueuedItems(t, metricsProvider, "test-fifo", podsGVR, tt.expectedQueuedItems)
+
+			// Verify processing latency observations
+			verifyLatencyObservations(t, metricsProvider, "test-fifo", podsGVR, tt.expectedLatencyObservations)
 		})
 	}
 }
@@ -192,13 +208,7 @@ func TestRealFIFO_MetricsNotPublishedForDuplicateGVR(t *testing.T) {
 	_ = f2.Add(mkFifoObj("bar", 2))
 
 	// Only f1's metric should be published, f2 uses noopMetric
-	want := `# HELP informer_queued_items [ALPHA] Number of items currently queued in the FIFO.
-# TYPE informer_queued_items gauge
-informer_queued_items{group="",name="duplicate-test",resource="pods",version="v1"} 1
-`
-	if err := testutil.GatherAndCompare(metricsProvider.registry, strings.NewReader(want), "informer_queued_items"); err != nil {
-		t.Fatal(err)
-	}
+	verifyQueuedItems(t, metricsProvider, "duplicate-test", podsGVR, 1)
 }
 
 func TestRealFIFO_MetricsTrackedIndependentlyForDifferentFIFOs(t *testing.T) {
@@ -241,24 +251,35 @@ func TestRealFIFO_MetricsTrackedIndependentlyForDifferentFIFOs(t *testing.T) {
 	_ = f2.Add(mkFifoObj("baz", 3))
 
 	// Verify metrics are tracked independently
-	want := `# HELP informer_queued_items [ALPHA] Number of items currently queued in the FIFO.
+	wantInformerQueuedItemsMetric := `# HELP informer_queued_items [ALPHA] Number of items currently queued in the FIFO.
 # TYPE informer_queued_items gauge
 informer_queued_items{group="",name="fifo-1",resource="pods",version="v1"} 2
 informer_queued_items{group="",name="fifo-2",resource="pods",version="v1"} 1
 `
-	if err := testutil.GatherAndCompare(metricsProvider.registry, strings.NewReader(want), "informer_queued_items"); err != nil {
+	if err := testutil.GatherAndCompare(metricsProvider.registry, strings.NewReader(wantInformerQueuedItemsMetric), "informer_queued_items"); err != nil {
 		t.Fatal(err)
 	}
 
 	// Pop from f1 and verify its metric decreases while f2's stays the same
 	_, _ = f1.Pop(func(obj interface{}, isInInitialList bool) error { return nil })
 
-	wantAfterPop := `# HELP informer_queued_items [ALPHA] Number of items currently queued in the FIFO.
+	wantInformerQueuedItemsMetricAfterPop := `# HELP informer_queued_items [ALPHA] Number of items currently queued in the FIFO.
 # TYPE informer_queued_items gauge
 informer_queued_items{group="",name="fifo-1",resource="pods",version="v1"} 1
 informer_queued_items{group="",name="fifo-2",resource="pods",version="v1"} 1
 `
-	if err := testutil.GatherAndCompare(metricsProvider.registry, strings.NewReader(wantAfterPop), "informer_queued_items"); err != nil {
+	if err := testutil.GatherAndCompare(metricsProvider.registry, strings.NewReader(wantInformerQueuedItemsMetricAfterPop), "informer_queued_items"); err != nil {
+		t.Fatal(err)
+	}
+
+	// Verify that processing latency was recorded for f1 only after the Pop.
+	// fifo-2 has count=0 because no Pop was called for it.
+	wantLatencyMetricAfterPop := `# HELP informer_processing_latency_seconds [ALPHA] Time taken to process events after popping from the queue.
+# TYPE informer_processing_latency_seconds histogram
+informer_processing_latency_seconds_count{group="",name="fifo-1",resource="pods",version="v1"} 1
+informer_processing_latency_seconds_count{group="",name="fifo-2",resource="pods",version="v1"} 0
+`
+	if err := testutil.GatherAndCompare(metricsProvider.gatherWithoutDurations(), strings.NewReader(wantLatencyMetricAfterPop), "informer_processing_latency_seconds"); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -324,8 +345,9 @@ func emptyKnownObjects() cache.KeyListerGetter {
 // testFIFOMetricsProvider is a test implementation of cache.FIFOMetricsProvider
 // that uses real component-base metrics registered with a custom registry.
 type testFIFOMetricsProvider struct {
-	registry metrics.KubeRegistry
-	gauge    *metrics.GaugeVec
+	registry  metrics.KubeRegistry
+	gauge     *metrics.GaugeVec
+	histogram *metrics.HistogramVec
 }
 
 func newTestFIFOMetricsProvider() *testFIFOMetricsProvider {
@@ -339,13 +361,75 @@ func newTestFIFOMetricsProvider() *testFIFOMetricsProvider {
 		},
 		[]string{"name", "group", "version", "resource"},
 	)
+	histogram := metrics.NewHistogramVec(
+		&metrics.HistogramOpts{
+			Subsystem:      "informer",
+			Name:           "processing_latency_seconds",
+			Help:           "Time taken to process events after popping from the queue.",
+			Buckets:        []float64{0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10},
+			StabilityLevel: metrics.ALPHA,
+		},
+		[]string{"name", "group", "version", "resource"},
+	)
 	registry.MustRegister(gauge)
+	registry.MustRegister(histogram)
 	return &testFIFOMetricsProvider{
-		registry: registry,
-		gauge:    gauge,
+		registry:  registry,
+		gauge:     gauge,
+		histogram: histogram,
 	}
 }
 
 func (p *testFIFOMetricsProvider) NewQueuedItemMetric(id cache.InformerNameAndResource) cache.GaugeMetric {
 	return p.gauge.WithLabelValues(id.Name(), id.GroupVersionResource().Group, id.GroupVersionResource().Version, id.GroupVersionResource().Resource)
+}
+
+func (p *testFIFOMetricsProvider) NewProcessingLatencyMetric(id cache.InformerNameAndResource) cache.HistogramMetric {
+	return p.histogram.WithLabelValues(id.Name(), id.GroupVersionResource().Group, id.GroupVersionResource().Version, id.GroupVersionResource().Resource)
+}
+
+func verifyQueuedItems(t *testing.T, metricsProvider *testFIFOMetricsProvider, informerName string, gvr schema.GroupVersionResource, expected int) {
+	t.Helper()
+	want := fmt.Sprintf(`# HELP informer_queued_items [ALPHA] Number of items currently queued in the FIFO.
+# TYPE informer_queued_items gauge
+informer_queued_items{group="%s",name="%s",resource="%s",version="%s"} %d
+`, gvr.Group, informerName, gvr.Resource, gvr.Version, expected)
+	if err := testutil.GatherAndCompare(metricsProvider.registry, strings.NewReader(want), "informer_queued_items"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// verifyLatencyObservations checks the histogram observation count using a custom gatherer
+// that strips timing-dependent values (bucket counts and sum) from the comparison, so that
+// we only verify the number of observations without being affected by the duration values.
+func verifyLatencyObservations(t *testing.T, metricsProvider *testFIFOMetricsProvider, informerName string, gvr schema.GroupVersionResource, expected uint64) {
+	t.Helper()
+	if expected == 0 {
+		return
+	}
+
+	want := fmt.Sprintf(`# HELP informer_processing_latency_seconds [ALPHA] Time taken to process events after popping from the queue.
+# TYPE informer_processing_latency_seconds histogram
+informer_processing_latency_seconds_count{group="%s",name="%s",resource="%s",version="%s"} %d
+`, gvr.Group, informerName, gvr.Resource, gvr.Version, expected)
+	if err := testutil.GatherAndCompare(metricsProvider.gatherWithoutDurations(), strings.NewReader(want), "informer_processing_latency_seconds"); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func (p *testFIFOMetricsProvider) gatherWithoutDurations() testutil.GathererFunc {
+	return func() ([]*testutil.MetricFamily, error) {
+		got, err := p.registry.Gather()
+		for _, mf := range got {
+			for _, m := range mf.Metric {
+				if m.Histogram == nil {
+					continue
+				}
+				// Remove everything from a histogram that depends on timing.
+				m.Histogram.SampleSum = nil
+				m.Histogram.Bucket = nil
+			}
+		}
+		return got, err
+	}
 }
