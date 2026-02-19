@@ -95,24 +95,6 @@ dependencies:
       match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
     - path: test/e2e/testing-manifests/serviceloadbalancer/netexecrc.yaml
       match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/multiple-certs/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/http/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/http2/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/pre-shared-cert/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/gce/static-ip-2/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/neg/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/static-ip/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/neg-exposed/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
-    - path: test/e2e/testing-manifests/ingress/neg-clusterip/rc.yaml
-      match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
     - path: test/e2e/dra/test-driver/deploy/example/pod-inline.yaml
       match: registry.k8s.io/e2e-test-images/agnhost:\d+\.\d+\.\d+
     - path: test/e2e/dra/test-driver/deploy/example/pod-external.yaml
