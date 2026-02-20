@@ -269,11 +269,12 @@ func TestUpdatePodFromAllocation(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if test.inPlacePodLevelResizeEnabled {
-				featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.InPlacePodLevelResourcesVerticalScaling, true)
-			}
+			logger, _ := ktesting.NewTestContext(t)
+			featuregatetesting.SetFeatureGateDuringTest(t, utilfeature.DefaultFeatureGate, features.InPlacePodLevelResourcesVerticalScaling, test.inPlacePodLevelResizeEnabled)
+			allocationManager := makeAllocationManager(t, &containertest.FakeRuntime{}, nil, nil)
 			pod := test.pod.DeepCopy()
-			allocatedPod, updated := updatePodFromAllocation(pod, test.allocated)
+			allocationManager.(*manager).allocated.SetPodResourceInfo(logger, pod.UID, test.allocated)
+			allocatedPod, updated := allocationManager.UpdatePodFromAllocation(pod)
 
 			if test.expectUpdate {
 				assert.True(t, updated, "updated")
