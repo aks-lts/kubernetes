@@ -211,9 +211,10 @@ type HPAScaleTest struct {
 func (st *HPAScaleTest) run(ctx context.Context, name string, kind schema.GroupVersionKind, f *framework.Framework) {
 	const timeToWait = 15 * time.Minute
 	initCPUTotal, initMemTotal := 0, 0
-	if st.resourceType == cpuResource {
+	switch st.resourceType {
+	case cpuResource:
 		initCPUTotal = st.initCPUTotal
-	} else if st.resourceType == memResource {
+	case memResource:
 		initMemTotal = st.initMemTotal
 	}
 	rc := e2eautoscaling.NewDynamicResourceConsumer(ctx, name, f.Namespace.Name, kind, st.initPods, initCPUTotal, initMemTotal, 0, st.perPodCPURequest, st.perPodMemRequest, f.ClientSet, f.ScalesGetter, e2eautoscaling.Disable, e2eautoscaling.Idle, nil)
@@ -319,9 +320,10 @@ type HPAContainerResourceScaleTest struct {
 func (st *HPAContainerResourceScaleTest) run(ctx context.Context, name string, kind schema.GroupVersionKind, f *framework.Framework) {
 	const timeToWait = 15 * time.Minute
 	initCPUTotal, initMemTotal := 0, 0
-	if st.resourceType == cpuResource {
+	switch st.resourceType {
+	case cpuResource:
 		initCPUTotal = st.initCPUTotal
-	} else if st.resourceType == memResource {
+	case memResource:
 		initMemTotal = st.initMemTotal
 	}
 	rc := e2eautoscaling.NewDynamicResourceConsumer(ctx, name, f.Namespace.Name, kind, st.initPods, initCPUTotal, initMemTotal, 0, st.perContainerCPURequest, st.perContainerMemRequest, f.ClientSet, f.ScalesGetter, st.sidecarStatus, st.sidecarType, nil)
