@@ -48,7 +48,7 @@ var _ = SIGDescribe(feature.HPA, "Horizontal pod autoscaling (scale resource: CP
 	f := framework.NewDefaultFramework("horizontal-pod-autoscaling")
 	f.NamespacePodSecurityLevel = api.LevelBaseline
 
-	f.Describe("Deployment (Pod Resource)", func() {
+	f.Describe("Deployment (Pod Resource)", framework.WithSlow(), func() {
 		ginkgo.It(titleUp+titleAverageUtilization, func(ctx context.Context) {
 			scaleUp(ctx, "test-deployment", e2eautoscaling.KindDeployment, cpuResource, utilizationMetricType, false, f)
 		})
@@ -81,7 +81,7 @@ var _ = SIGDescribe(feature.HPA, "Horizontal pod autoscaling (scale resource: CP
 		})
 	})
 
-	f.Describe("ReplicaSet", func() {
+	f.Describe("ReplicaSet", framework.WithSlow(), func() {
 		ginkgo.It(titleUp, func(ctx context.Context) {
 			scaleUp(ctx, "rs", e2eautoscaling.KindReplicaSet, cpuResource, utilizationMetricType, false, f)
 		})
@@ -91,7 +91,7 @@ var _ = SIGDescribe(feature.HPA, "Horizontal pod autoscaling (scale resource: CP
 	})
 
 	// These tests take ~20 minutes each.
-	f.Describe("ReplicaSet", func() {
+	f.Describe("ReplicaSet", framework.WithSlow(), func() {
 		ginkgo.It(titleUp+" and verify decision stability", func(ctx context.Context) {
 			scaleUp(ctx, "rs", e2eautoscaling.KindReplicaSet, cpuResource, utilizationMetricType, true, f)
 		})
@@ -211,9 +211,10 @@ type HPAScaleTest struct {
 func (st *HPAScaleTest) run(ctx context.Context, name string, kind schema.GroupVersionKind, f *framework.Framework) {
 	const timeToWait = 15 * time.Minute
 	initCPUTotal, initMemTotal := 0, 0
-	if st.resourceType == cpuResource {
+	switch st.resourceType {
+	case cpuResource:
 		initCPUTotal = st.initCPUTotal
-	} else if st.resourceType == memResource {
+	case memResource:
 		initMemTotal = st.initMemTotal
 	}
 	rc := e2eautoscaling.NewDynamicResourceConsumer(ctx, name, f.Namespace.Name, kind, st.initPods, initCPUTotal, initMemTotal, 0, st.perPodCPURequest, st.perPodMemRequest, f.ClientSet, f.ScalesGetter, e2eautoscaling.Disable, e2eautoscaling.Idle, nil)
@@ -319,9 +320,10 @@ type HPAContainerResourceScaleTest struct {
 func (st *HPAContainerResourceScaleTest) run(ctx context.Context, name string, kind schema.GroupVersionKind, f *framework.Framework) {
 	const timeToWait = 15 * time.Minute
 	initCPUTotal, initMemTotal := 0, 0
-	if st.resourceType == cpuResource {
+	switch st.resourceType {
+	case cpuResource:
 		initCPUTotal = st.initCPUTotal
-	} else if st.resourceType == memResource {
+	case memResource:
 		initMemTotal = st.initMemTotal
 	}
 	rc := e2eautoscaling.NewDynamicResourceConsumer(ctx, name, f.Namespace.Name, kind, st.initPods, initCPUTotal, initMemTotal, 0, st.perContainerCPURequest, st.perContainerMemRequest, f.ClientSet, f.ScalesGetter, st.sidecarStatus, st.sidecarType, nil)
