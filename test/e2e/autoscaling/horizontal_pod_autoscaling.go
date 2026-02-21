@@ -48,7 +48,7 @@ var _ = SIGDescribe(feature.HPA, "Horizontal pod autoscaling (scale resource: CP
 	f := framework.NewDefaultFramework("horizontal-pod-autoscaling")
 	f.NamespacePodSecurityLevel = api.LevelBaseline
 
-	f.Describe("Deployment (Pod Resource)", func() {
+	f.Describe("Deployment (Pod Resource)", framework.WithSlow(), func() {
 		ginkgo.It(titleUp+titleAverageUtilization, func(ctx context.Context) {
 			scaleUp(ctx, "test-deployment", e2eautoscaling.KindDeployment, cpuResource, utilizationMetricType, false, f)
 		})
@@ -81,7 +81,7 @@ var _ = SIGDescribe(feature.HPA, "Horizontal pod autoscaling (scale resource: CP
 		})
 	})
 
-	f.Describe("ReplicaSet", func() {
+	f.Describe("ReplicaSet", framework.WithSlow(), func() {
 		ginkgo.It(titleUp, func(ctx context.Context) {
 			scaleUp(ctx, "rs", e2eautoscaling.KindReplicaSet, cpuResource, utilizationMetricType, false, f)
 		})
@@ -91,7 +91,7 @@ var _ = SIGDescribe(feature.HPA, "Horizontal pod autoscaling (scale resource: CP
 	})
 
 	// These tests take ~20 minutes each.
-	f.Describe("ReplicaSet", func() {
+	f.Describe("ReplicaSet", framework.WithSlow(), func() {
 		ginkgo.It(titleUp+" and verify decision stability", func(ctx context.Context) {
 			scaleUp(ctx, "rs", e2eautoscaling.KindReplicaSet, cpuResource, utilizationMetricType, true, f)
 		})
