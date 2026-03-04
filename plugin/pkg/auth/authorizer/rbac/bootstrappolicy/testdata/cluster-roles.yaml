@@ -1001,6 +1001,7 @@ items:
     name: system:monitoring
   rules:
   - nonResourceURLs:
+    - /flagz
     - /healthz
     - /healthz/*
     - /livez
