@@ -2997,6 +2997,7 @@ func setup(tCtx ktesting.TContext, args *config.DynamicResourcesArgs, nodes []*v
 	tc.client.ReactionChain = append(apiReactors, tc.client.ReactionChain...)
 
 	tc.informerFactory = informers.NewSharedInformerFactory(tc.client, 0)
+	var doneCheckers []cache.DoneChecker
 	resourceSliceTrackerOpts := resourceslicetracker.Options{
 		EnableDeviceTaintRules: true,
 		SliceInformer:          tc.informerFactory.Resource().V1().ResourceSlices(),
@@ -3006,6 +3007,7 @@ func setup(tCtx ktesting.TContext, args *config.DynamicResourcesArgs, nodes []*v
 	}
 	resourceSliceTracker, err := resourceslicetracker.StartTracker(tCtx, resourceSliceTrackerOpts)
 	require.NoError(tCtx, err, "couldn't start resource slice tracker")
+	doneCheckers = append(doneCheckers, resourceSliceTracker.HasSyncedChecker())
 
 	claimsCache := assumecache.NewAssumeCache(tCtx.Logger(), tc.informerFactory.Resource().V1().ResourceClaims().Informer(), "resource claim", "", nil)
 	// NewAssumeCache calls the informer's AddEventHandler method to register
@@ -3018,14 +3020,14 @@ func setup(tCtx ktesting.TContext, args *config.DynamicResourcesArgs, nodes []*v
 	// This is not the registered handler that is used by the DRA
 	// manager, but it is close enough because the assume cache
 	// uses a single boolean for "is synced" for all handlers.
-	registeredHandler := claimsCache.AddEventHandler(cache.ResourceEventHandlerFuncs{})
+	doneCheckers = append(doneCheckers, claimsCache.AddEventHandler(cache.ResourceEventHandlerFuncs{}).HasSyncedChecker())
 
 	tc.draManager = NewDRAManager(tCtx, claimsCache, resourceSliceTracker, tc.informerFactory)
 	if features.EnableDRAExtendedResource {
 		cache := tc.draManager.DeviceClassResolver().(*extendedresourcecache.ExtendedResourceCache)
-		if _, err := tc.informerFactory.Resource().V1().DeviceClasses().Informer().AddEventHandler(cache); err != nil {
-			tCtx.Logger().Error(err, "failed to add device class informer event handler")
-		}
+		deviceClassHandlerRegistration, err := tc.informerFactory.Resource().V1().DeviceClasses().Informer().AddEventHandler(cache)
+		require.NoError(tCtx, err, "failed to add device class informer event handler")
+		doneCheckers = append(doneCheckers, deviceClassHandlerRegistration.HasSyncedChecker())
 	}
 
 	opts := []runtime.Option{
@@ -3068,11 +3070,11 @@ func setup(tCtx ktesting.TContext, args *config.DynamicResourcesArgs, nodes []*v
 	})
 
 	tc.informerFactory.WaitForCacheSync(tCtx.Done())
-	// The above does not tell us if the registered handler (from NewAssumeCache)
-	// is synced, we need to wait until HasSynced of the handler returns
-	// true, this ensures that the assume cache is in sync with the informer's
+	// The above does not tell us if the registered handlers (e.g. from NewAssumeCache)
+	// are synced, we need to wait until the event handlers confirm that they are synced.
+	// This ensures that the assume cache is in sync with the informer's
 	// store which has been informed by at least one full LIST of the underlying storage.
-	cache.WaitForNamedCacheSyncWithContext(tCtx, registeredHandler.HasSynced, resourceSliceTracker.HasSynced)
+	cache.WaitFor(tCtx, "event handlers", doneCheckers...)
 
 	for _, node := range nodes {
 		nodeInfo := framework.NewNodeInfo()
