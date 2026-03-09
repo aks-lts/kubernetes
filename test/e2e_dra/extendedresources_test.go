@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	drautils "k8s.io/kubernetes/test/e2e/dra/utils"
+	"k8s.io/kubernetes/test/e2e/framework"
 	e2epod "k8s.io/kubernetes/test/e2e/framework/pod"
 	"k8s.io/kubernetes/test/utils/ktesting"
 )
@@ -158,7 +159,13 @@ func createPodWithExtendedResource(tCtx ktesting.TContext, b *drautils.Builder, 
 // verifyPodRunningWithClaim verifies a pod is running and has a valid ResourceClaim.
 func verifyPodRunningWithClaim(tCtx ktesting.TContext, b *drautils.Builder, pod *v1.Pod, resourceName v1.ResourceName) {
 	namespace := tCtx.Namespace()
-	b.TestPod(tCtx, pod, "container_0_request_0", "true")
+	// Use Eventually to retry the full run+exec check. During cluster upgrades and
+	// downgrades, nodes are temporarily restarted, which can cause transient exec
+	// failures ("unable to upgrade connection: pod does not exist") even though the
+	// pod is reported as Running by the API server.
+	tCtx.Eventually(func(tCtx ktesting.TContext) {
+		b.TestPod(tCtx, pod, "container_0_request_0", "true")
+	}).WithTimeout(framework.PodStartTimeout).Should(gomega.Succeed(), "pod %s should be running with expected env", pod.Name)
 	tCtx.Logf("Pod %q is running", pod.Name)
 
 	// Get updated pod to check status
