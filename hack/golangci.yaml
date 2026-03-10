@@ -176,22 +176,19 @@ linters:
         path: "staging/src/k8s.io/api/events/(v1|v1beta1)/types.go"
       - text: 'notimestamp: naming convention "notimestamp": field AllocationResult.AllocationTimestamp: prefer use of the term ''time'' over ''timestamp'''
         path: "staging/src/k8s.io/api/resource/(v1|v1beta1|v1beta2)/types.go"
+      
+      
       # optionalfields - Ignore optionalfields issues for existing API group
       # TODO: For each existing API group, we aim to remove it over time.
       - text: "optionalfields: field .* should (?:be a pointer|have the omitempty tag)\\."
         path: "staging/src/k8s.io/api/(admission|admissionregistration|apps|authentication|authorization|autoscaling|batch|certificates|coordination|core|discovery|events|extensions|flowcontrol|imagepolicy|networking|node|policy|rbac|resource|scheduling|storage|storagemigration)"
-      - text: "optionalfields: field StorageVersionCondition.ObservedGeneration should be a pointer."
+      
+      # optionalfields - Ignore existing issues for apiserverinternal API group
+      - text: "optionalfields: field StorageVersionCondition.(ObservedGeneration|LastTransitionTime) should be a pointer."
         path: "staging/src/k8s.io/api/apiserverinternal/v1alpha1/types.go"
-      - text: "optionalfields: field StorageVersion.Spec should be a pointer."
+      - text: "optionalfields: field StorageVersion.(Spec|Status) should (?:be a pointer|have the omitempty tag)\\."
         path: "staging/src/k8s.io/api/apiserverinternal/v1alpha1/types.go"
-      - text: "optionalfields: field StorageVersion.Status should be a pointer."
-        path: "staging/src/k8s.io/api/apiserverinternal/v1alpha1/types.go"
-      - text: "optionalfields: field StorageVersionCondition.LastTransitionTime should be a pointer."
-        path: "staging/src/k8s.io/api/apiserverinternal/v1alpha1/types.go"
-      - text: "optionalfields: field StorageVersion.Spec should have the omitempty tag."
-        path: "staging/src/k8s.io/api/apiserverinternal/v1alpha1/types.go"
-      - text: "optionalfields: field StorageVersion.Status should have the omitempty tag."
-        path: "staging/src/k8s.io/api/apiserverinternal/v1alpha1/types.go"
+      
       # Pre-existing issues from the conflictmarkers linter
       # The Error field in some older API types is marked as both optional and required.
       # This is incorrect, but cannot be changed without breaking changes.
@@ -437,14 +434,14 @@ linters:
             #   jsonTagRegex: "^[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)*$" # The default regex is appropriate for our use case.
             # nomaps:
             #   policy: AllowStringToStringMaps # Determines how the linter should handle maps of basic types. Maps of objects are always disallowed.
-            # optionalFields:
-            #  pointers:
-            #    preference: Always | WhenRequired # Whether to always require pointers, or only when required. Defaults to `Always`.
-            #    policy: SuggestFix | Warn # The policy for pointers in optional fields. Defaults to `SuggestFix`.
-            #  omitempty:
-            #      policy: SuggestFix | Warn | Ignore # The policy for omitempty in optional fields. Defaults to `SuggestFix`.
-            #  omitzero:
-            #      policy: SuggestFix | Warn | Forbid # The policy for omitzero in optional fields. Defaults to `SuggestFix`.
+            optionalFields:
+             pointers:
+               preference: Always # Whether to always require pointers, or only when required. Defaults to `Always`.
+               policy: SuggestFix # The policy for pointers in optional fields. Defaults to `SuggestFix`.
+             omitempty:
+                 policy: SuggestFix # The policy for omitempty in optional fields. Defaults to `SuggestFix`.
+             omitzero:
+                 policy: Forbid # The policy for omitzero in optional fields. Defaults to `SuggestFix`.
             # optionalOrRequired:
             #   preferredOptionalMarker: optional # The preferred optional marker to use, fixes will suggest to use this marker. Defaults to `optional`.
             #   preferredRequiredMarker: required # The preferred required marker to use, fixes will suggest to use this marker. Defaults to `required`. 
