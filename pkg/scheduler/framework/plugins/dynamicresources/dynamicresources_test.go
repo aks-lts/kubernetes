@@ -771,6 +771,7 @@ var (
 	}()
 
 	allocationResultWithBindingConditions = &resourceapi.AllocationResult{
+		AllocationTimestamp: new(metav1.Time), // Non-nil, actual value not checked.
 		Devices: resourceapi.DeviceAllocationResult{
 			Results: []resourceapi.DeviceRequestAllocationResult{{
 				Driver:                   driver,
@@ -785,6 +786,7 @@ var (
 	}
 
 	allocationResultWithBindingConditions2 = &resourceapi.AllocationResult{
+		AllocationTimestamp: new(metav1.Time), // Non-nil, actual value not checked.
 		Devices: resourceapi.DeviceAllocationResult{
 			Results: []resourceapi.DeviceRequestAllocationResult{{
 				Driver:                   driver2,
@@ -797,6 +799,10 @@ var (
 		},
 		NodeSelector: st.MakeNodeSelector().In("metadata.name", []string{nodeName}, st.NodeSelectorTypeMatchFields).Obj(),
 	}
+
+	bindClaim = st.FromResourceClaim(allocatedClaim).
+			Allocation(allocationResultWithBindingConditions).
+			Obj()
 
 	boundClaim = st.FromResourceClaim(allocatedClaim).
 			Allocation(allocationResultWithBindingConditions).
@@ -871,6 +877,17 @@ func reserve(claim *resourceapi.ResourceClaim, pod *v1.Pod) *resourceapi.Resourc
 	return st.FromResourceClaim(claim).
 		ReservedForPod(pod.Name, types.UID(pod.UID)).
 		Obj()
+}
+
+// addAllocationTimestamp adds an AllocationTimestamp to a claim.
+// Non-nil is all that matters for the go-cmp comparison.
+// Test cases involving binding conditions must ensure that they
+// have such a non-nil time stamp in their expected claims starting
+// with PreBind because PreBind adds it when the feature is on.
+func addAllocationTimestamp(claim *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
+	claim = claim.DeepCopy()
+	claim.Status.Allocation.AllocationTimestamp = new(metav1.Time)
+	return claim
 }
 
 func adminAccess(claim *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
@@ -1798,11 +1815,11 @@ func testPlugin(tCtx ktesting.TContext) {
 					inFlightClaims: []metav1.Object{extendedResourceClaimNoName2},
 				},
 				prebind: result{
-					assumedClaim: reserve(extendedResourceClaim2, podWithExtendedResourceName2),
-					added:        []metav1.Object{reserve(extendedResourceClaim2, podWithExtendedResourceName2)},
+					assumedClaim: addAllocationTimestamp(reserve(extendedResourceClaim2, podWithExtendedResourceName2)),
+					added:        []metav1.Object{addAllocationTimestamp(reserve(extendedResourceClaim2, podWithExtendedResourceName2))},
 				},
 				postbind: result{
-					assumedClaim: reserve(extendedResourceClaim2, podWithExtendedResourceName2),
+					assumedClaim: addAllocationTimestamp(reserve(extendedResourceClaim2, podWithExtendedResourceName2)),
 				},
 			},
 		},
@@ -2172,6 +2189,133 @@ func testPlugin(tCtx ktesting.TContext) {
 				},
 			},
 		},
+		"dont-add-allocation-timestamp": {
+			pod:     podWithClaimName,
+			claims:  []*resourceapi.ResourceClaim{pendingClaim},
+			classes: []*resourceapi.DeviceClass{deviceClass},
+			objs:    []apiruntime.Object{workerNodeSlice},
+			want: want{
+				reserve: result{
+					inFlightClaims: []metav1.Object{allocatedClaim},
+				},
+				prebind: result{
+					assumedClaim: reserve(allocatedClaim, podWithClaimName),
+					changes: change{
+						claim: func(in *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
+							return reserve(allocatedClaim, podWithClaimName)
+						},
+					},
+				},
+			},
+		},
+		"add-allocation-timestamp": {
+			enableDRADeviceBindingConditions:   true,
+			enableDRAResourceClaimDeviceStatus: true,
+			pod:                                podWithClaimName,
+			claims:                             []*resourceapi.ResourceClaim{pendingClaim},
+			classes:                            []*resourceapi.DeviceClass{deviceClass},
+			objs:                               []apiruntime.Object{workerNodeSlice},
+			want: want{
+				reserve: result{
+					inFlightClaims: []metav1.Object{allocatedClaim},
+				},
+				prebind: result{
+					assumedClaim: addAllocationTimestamp(reserve(allocatedClaim, podWithClaimName)),
+					changes: change{
+						claim: func(in *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
+							return addAllocationTimestamp(reserve(allocatedClaim, podWithClaimName))
+						},
+					},
+				},
+			},
+		},
+		"add-allocation-timestamp-failure": {
+			enableDRADeviceBindingConditions:   true,
+			enableDRAResourceClaimDeviceStatus: true,
+			pod:                                podWithClaimName,
+			claims:                             []*resourceapi.ResourceClaim{allocatedClaim},
+			prepare: prepare{
+				prebind: change{
+					claim: func(in *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
+						// Simulate deallocation before PreBind runs.
+						return st.FromResourceClaim(in).
+							Allocation(nil).
+							Obj()
+					},
+				},
+			},
+			want: want{
+				prebind: result{
+					status: fwk.AsStatus(fmt.Errorf("claim %s got deallocated elsewhere in the meantime", klog.KObj(allocatedClaim))),
+				},
+			},
+		},
+		"bind-claim-with-binding-conditions": {
+			enableDRADeviceBindingConditions:   true,
+			enableDRAResourceClaimDeviceStatus: true,
+			pod:                                podWithClaimName,
+			claims:                             []*resourceapi.ResourceClaim{pendingClaim},
+			classes:                            []*resourceapi.DeviceClass{deviceClass},
+			objs:                               []apiruntime.Object{fabricSlice},
+			args: &config.DynamicResourcesArgs{
+				// Time out quickly in PreBind. There's no controller which sets the
+				// binding conditions.
+				BindingTimeout: &metav1.Duration{Duration: time.Second},
+			},
+			want: want{
+				reserve: result{
+					inFlightClaims: []metav1.Object{func() *resourceapi.ResourceClaim {
+						claim := bindClaim.DeepCopy()
+						// Will get set in PreBind.
+						claim.Status.Allocation.AllocationTimestamp = nil
+						return claim
+					}()},
+				},
+				prebind: result{
+					assumedClaim: reserve(bindClaim, podWithClaimName),
+					changes: change{
+						claim: func(in *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
+							return reserve(bindClaim, podWithClaimName)
+						},
+					},
+					// From PreBind itself, when checking isPodReadyForBinding times out.
+					status: fwk.AsStatus(errors.New("device binding timeout")),
+				},
+			},
+		},
+		"bind-failure-concurrent-deallocation": {
+			enableDRADeviceBindingConditions:   true,
+			enableDRAResourceClaimDeviceStatus: true,
+			pod:                                podWithClaimName,
+			claims:                             []*resourceapi.ResourceClaim{pendingClaim},
+			classes:                            []*resourceapi.DeviceClass{deviceClass},
+			objs:                               []apiruntime.Object{fabricSlice},
+			args: &config.DynamicResourcesArgs{
+				// Time out quickly in PreBind. There's no controller which sets the
+				// binding conditions.
+				BindingTimeout: &metav1.Duration{Duration: time.Second},
+			},
+			want: want{
+				reserve: result{
+					inFlightClaims: []metav1.Object{func() *resourceapi.ResourceClaim {
+						claim := bindClaim.DeepCopy()
+						// Will get set in PreBind.
+						claim.Status.Allocation.AllocationTimestamp = nil
+						return claim
+					}()},
+				},
+				prebind: result{
+					assumedClaim: reserve(bindClaim, podWithClaimName),
+					changes: change{
+						claim: func(in *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
+							return reserve(bindClaim, podWithClaimName)
+						},
+					},
+					// From PreBind itself, when checking isPodReadyForBinding times out.
+					status: fwk.AsStatus(errors.New("device binding timeout")),
+				},
+			},
+		},
 		"bound-claim-with-succeeded-binding-conditions": {
 			enableDRADeviceBindingConditions:   true,
 			enableDRAResourceClaimDeviceStatus: true,
@@ -2307,6 +2451,7 @@ func testPlugin(tCtx ktesting.TContext) {
 								Obj()
 						},
 					},
+					// From isPodReadyForBinding.
 					status: fwk.AsStatus(errors.New("claim " + claim.Name + " binding timeout")),
 				},
 			},
@@ -2362,12 +2507,13 @@ func testPlugin(tCtx ktesting.TContext) {
 			claims: []*resourceapi.ResourceClaim{allocatedClaim, otherClaim},
 			want: want{
 				prebind: result{
-					assumedClaim: reserve(allocatedClaim, podWithClaimTemplateInStatus),
+					assumedClaim: addAllocationTimestamp(reserve(allocatedClaim, podWithClaimTemplateInStatus)),
 					changes: change{
 						claim: func(claim *resourceapi.ResourceClaim) *resourceapi.ResourceClaim {
 							if claim.Name == claimName {
 								claim = claim.DeepCopy()
 								claim.Status.ReservedFor = inUseClaim.Status.ReservedFor
+								claim = addAllocationTimestamp(claim)
 							}
 							return claim
 						},
@@ -2842,10 +2988,18 @@ func (tc *testContext) verify(tCtx ktesting.TContext, expected result, initialOb
 	// Sometimes assert strips the diff too much, let's do it ourselves...
 	ignoreFieldsInResourceClaims := []cmp.Option{
 		cmpopts.IgnoreFields(metav1.ObjectMeta{}, "UID", "ResourceVersion"),
-		cmpopts.IgnoreFields(resourceapi.AllocationResult{}, "AllocationTimestamp"),
+		cmp.Transformer("AllocationTimestamp", func(result resourceapi.AllocationResult) resourceapi.AllocationResult {
+			// Replace all allocation timestamps with the empty timestamp before comparison
+			// because the actual value is unpredictable (not running in a synctest bubble).
+			if result.AllocationTimestamp != nil {
+				result.AllocationTimestamp = new(metav1.Time)
+			}
+			return result
+		}),
 		// It does not matter which specific device is allocated for the testing purpose.
 		cmpopts.IgnoreFields(resourceapi.DeviceRequestAllocationResult{}, "Device"),
 	}
+
 	if diff := cmp.Diff(wantObjects, objects, ignoreFieldsInResourceClaims...); diff != "" {
 		tCtx.Errorf("Stored objects are different (- expected, + actual):\n%s", diff)
 	}
@@ -3149,7 +3303,7 @@ func createReactor(tracker cgotesting.ObjectTracker, failPatch bool) func(action
 				return true, nil, errors.New("internal error: unexpected old object type")
 			}
 			if oldObjMeta.GetResourceVersion() != resourceVersion {
-				return true, nil, errors.New("ResourceVersion must match the object that gets updated")
+				return true, nil, apierrors.NewConflict(action.GetResource().GroupResource(), obj.GetName(), errors.New("ResourceVersion must match the object that gets updated"))
 			}
 
 			obj.SetResourceVersion(fmt.Sprintf("%d", resourceVersionCounter))

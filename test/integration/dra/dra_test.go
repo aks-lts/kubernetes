@@ -1526,7 +1526,12 @@ func testControllerManagerMetrics(tCtx ktesting.TContext) {
 	)
 
 	// Start the controller (this will run in background and stop when tCtx is cancelled)
-	runResourceClaimController()
+	var wg sync.WaitGroup
+	tCtx.Cleanup(func() {
+		tCtx.Cancel("test is done")
+		wg.Wait()
+	})
+	wg.Go(runResourceClaimController)
 
 	tCtx.Log("ResourceClaim controller started successfully")
 	tCtx.Log("Testing ResourceClaim controller success metrics with admin access labels")
