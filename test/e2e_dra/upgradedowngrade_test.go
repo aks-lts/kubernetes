@@ -216,7 +216,7 @@ func testUpgradeDowngrade(tCtx ktesting.TContext) {
 			"FEATURE_GATES":  "DynamicResourceAllocation=true,DRADeviceTaintRules=true,DRADeviceTaints=true,DRAExtendedResource=true,DRAPartitionableDevices=true",
 			// *not* needed because driver will run in "local filesystem" mode (= driver.IsLocal): "ALLOW_PRIVILEGED": "1",
 		}
-		cluster.Start(tCtx, binDir, localUpClusterEnv)
+		cluster.Start(tCtx, fmt.Sprintf("0-initial-%d.%d", major, previousMinor), binDir, localUpClusterEnv)
 	})
 
 	restConfig := cluster.LoadConfig(tCtx)
@@ -315,7 +315,7 @@ func testUpgradeDowngrade(tCtx ktesting.TContext) {
 	// We could split this up into first updating the apiserver, then control plane components, then restarting kubelet.
 	// For the purpose of this test here we we primarily care about full before/after comparisons, so not done yet.
 	// TODO
-	restoreOptions := cluster.Modify(tCtx.WithStep(fmt.Sprintf("update to %s", gitVersion)), localupcluster.ModifyOptions{Upgrade: true, BinDir: dir})
+	restoreOptions := cluster.Modify(tCtx.WithStep(fmt.Sprintf("update to %s", gitVersion)), "1-"+gitVersion, localupcluster.ModifyOptions{Upgrade: true, BinDir: dir})
 
 	// kubelet wipes all resource slices because it doesn't know which drivers were running.
 	// We need to wait for them to be recreated.
@@ -333,7 +333,7 @@ func testUpgradeDowngrade(tCtx ktesting.TContext) {
 	})
 
 	// Roll back.
-	cluster.Modify(tCtx.WithStep("downgrade"), restoreOptions)
+	cluster.Modify(tCtx.WithStep("downgrade"), fmt.Sprintf("2-restored-%d.%d", major, previousMinor), restoreOptions)
 
 	// kubelet wipes all resource slices because it doesn't know which drivers were running.
 	// We need to wait for them to be recreated.
