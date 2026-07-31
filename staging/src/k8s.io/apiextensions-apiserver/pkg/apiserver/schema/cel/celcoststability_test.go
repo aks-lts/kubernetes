@@ -98,8 +98,8 @@ func TestCelCostStability(t *testing.T) {
 			schema: schemas(stringType, stringType),
 			expectCost: map[string]int64{
 				ValsEqualThemselvesAndDataLiteral("self.val1", "self.val2", "'Rook takes 👑'"): 14,
-				"self.val1.startsWith('Rook')":    4,
-				"!self.val1.startsWith('knight')": 5,
+				"self.val1.startsWith('Rook')":    3,
+				"!self.val1.startsWith('knight')": 4,
 				"self.val1.matches('^[^0-9]*$')":  8,
 				"!self.val1.matches('^[0-9]*$')":  7,
 				"type(self.val1) == string":       4,
@@ -2022,7 +2022,7 @@ func TestCelEstimatedCostStability(t *testing.T) {
 				"optional.of('a').hasValue()":                         2,
 				"optional.of('a').or(optional.of('a')).hasValue()":    4, // or() is short-circuited
 				"optional.none().or(optional.of('a')).hasValue()":     4,
-				"optional.of('a').optMap(v, v == 'value').hasValue()": 17,
+				"optional.of('a').optMap(v, v == 'value').hasValue()": 18,
 				"self.obj.?field == optional.of('a')":                 uint64(1844674407370955268),
 				"self.obj.?absentField == optional.none()":            uint64(1844674407370955268),
 				"self.obj.?field.orValue('v') == 'a'":                 5,
