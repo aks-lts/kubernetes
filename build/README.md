@@ -71,6 +71,16 @@ the appropriate command, e.g.
 docker load --input _output/release-images/amd64/kube-controller-manager.tar
 ```
 
+## AKS LTS runtime images
+
+The control-plane and kubectl images use the digest-pinned Debian 12 distroless
+base in [`common.sh`](common.sh). The default base supports `linux/amd64` and
+`linux/arm64`. Control-plane containers must invoke their component binary in
+`/usr/local/bin` directly; this base does not contain `/go-runner`.
+
+Set `KUBE_GORUNNER_IMAGE` or the individual component base-image variables for
+other architectures or runtime requirements.
+
 ## Releasing
 
 The [`build/release.sh`](release.sh) script will build a release.  It will build binaries, run tests, (optionally) build runtime Docker images.
