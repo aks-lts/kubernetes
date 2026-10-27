@@ -73,6 +73,39 @@ docker load --input _output/release-images/amd64/kube-controller-manager.tar
 
 ## Releasing
 
+### LTS runtime trust refresh
+
+The server, kubectl, and conformance image recipes replace the runtime CA store
+from an immutable DevInfra image without replacing the original runtime base,
+go-runner, iptables binaries, image configuration, or compiler. The certificate
+donor uses amd64 only to copy architecture-independent data. A pinned, static,
+target-platform BusyBox removes old trust paths using a BuildKit bind mount; it
+is not included in the resulting image. A pinned build-host Python/OpenSSL stage
+reconstructs individual PEM files and subject-hash links from the verified
+bundle so directory-based trust continues to work. Builds require BuildKit and
+access to the pinned MCR donor and Docker Hub Python and BusyBox images; no
+package downloads run during image construction.
+
+The expected bundle SHA256 is
+`e9c7b63ee2623386e9b0a3ee32f499d01a8ea23dc83b8383ddff9f8e749543b7`
+(148 roots). Both emSign ECC Root CA - G3 and AAA Certificate Services must be
+absent from the bundle and trust directories. Validate each built image and
+platform, for example:
+
+```shell
+python3 build/server-image/verify_ca_certificates.py --platform linux/arm64 IMAGE
+```
+
+This refresh is a CA-file overlay, not a package-manager upgrade. Release
+provenance and SBOMs must record the pinned donor rather than infer the CA
+contents from unchanged base package metadata. External image builders, such as
+DALEC, that do not consume these Dockerfiles need independent recipe and final
+image verification. Deployment-specific trust mounts and environment overrides
+also require separate checks.
+
+This does not update the Go verifier compiled into Kubernetes binaries, qualify
+a compiler transition, or authorize release tags or deployment.
+
 The [`build/release.sh`](release.sh) script will build a release.  It will build binaries, run tests, (optionally) build runtime Docker images.
 
 The main output is a tar file: `kubernetes.tar.gz`.  This includes:
