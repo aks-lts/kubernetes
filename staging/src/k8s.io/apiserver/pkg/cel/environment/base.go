@@ -173,7 +173,7 @@ var baseOptsWithoutStrictCost = []VersionedOptions{
 	{
 		IntroducedVersion: version.MajorMinor(1, 32),
 		EnvOptions: []cel.EnvOption{
-			UnversionedLib(ext.TwoVarComprehensions),
+			UnversionedLib(func() cel.EnvOption { return ext.TwoVarComprehensions() }),
 		},
 	},
 }
