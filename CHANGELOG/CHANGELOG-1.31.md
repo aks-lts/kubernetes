@@ -3,14 +3,11 @@
   - [Downloads for v1.31.101-akslts](#downloads-for-v131101-akslts)
     - [Source Code](#source-code)
   - [Changelog since v1.31.100-akslts](#changelog-since-v131100-akslts)
-  - [Urgent Upgrade Notes](#urgent-upgrade-notes)
-    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade)
   - [Important Security Information](#important-security-information)
     - [CVE-2026-2270: StatefulSet and ControllerRevision write permissions allow cross-namespace pod creation](#cve-2026-2270-statefulset-and-controllerrevision-write-permissions-allow-cross-namespace-pod-creation)
     - [CVE-2026-76654: Subpath symlinking on Windows nodes permits NTLM coercion](#cve-2026-76654-subpath-symlinking-on-windows-nodes-permits-ntlm-coercion)
   - [Changes by Kind](#changes-by-kind)
     - [Bug or Regression](#bug-or-regression)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake)
 - [v1.31.100-akslts](#v131100-akslts)
   - [Downloads for v1.31.100-akslts](#downloads-for-v131100-akslts)
     - [Source Code](#source-code-1)
@@ -30,7 +27,7 @@
   - [Changes by Kind](#changes-by-kind-2)
     - [Feature](#feature)
     - [Bug or Regression](#bug-or-regression-2)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-1)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake)
   - [Dependencies](#dependencies)
     - [Added](#added)
     - [Changed](#changed)
@@ -46,7 +43,7 @@
   - [Changes by Kind](#changes-by-kind-3)
     - [Feature](#feature-1)
     - [Bug or Regression](#bug-or-regression-3)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-2)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-1)
   - [Dependencies](#dependencies-1)
     - [Added](#added-1)
     - [Changed](#changed-1)
@@ -93,7 +90,7 @@
   - [Changes by Kind](#changes-by-kind-6)
     - [Feature](#feature-3)
     - [Bug or Regression](#bug-or-regression-6)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-3)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-2)
   - [Dependencies](#dependencies-4)
     - [Added](#added-4)
     - [Changed](#changed-4)
@@ -137,7 +134,7 @@
   - [Changelog since v1.31.6](#changelog-since-v1316)
   - [Changes by Kind](#changes-by-kind-9)
     - [Bug or Regression](#bug-or-regression-9)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-4)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-3)
   - [Dependencies](#dependencies-7)
     - [Added](#added-7)
     - [Changed](#changed-7)
@@ -155,7 +152,7 @@
   - [Changes by Kind](#changes-by-kind-10)
     - [Feature](#feature-5)
     - [Bug or Regression](#bug-or-regression-10)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-5)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-4)
   - [Dependencies](#dependencies-8)
     - [Added](#added-8)
     - [Changed](#changed-8)
@@ -218,7 +215,7 @@
   - [Changes by Kind](#changes-by-kind-14)
     - [Feature](#feature-8)
     - [Bug or Regression](#bug-or-regression-14)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-6)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-5)
     - [Uncategorized](#uncategorized)
   - [Dependencies](#dependencies-12)
     - [Added](#added-12)
@@ -237,7 +234,7 @@
     - [API Change](#api-change-1)
     - [Feature](#feature-9)
     - [Bug or Regression](#bug-or-regression-15)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-7)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-6)
   - [Dependencies](#dependencies-13)
     - [Added](#added-13)
     - [Changed](#changed-13)
@@ -250,15 +247,15 @@
     - [Node Binaries](#node-binaries-14)
     - [Container Images](#container-images-14)
   - [Changelog since v1.30.0](#changelog-since-v1300)
-  - [Urgent Upgrade Notes](#urgent-upgrade-notes-1)
-    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade-1)
+  - [Urgent Upgrade Notes](#urgent-upgrade-notes)
+    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade)
   - [Changes by Kind](#changes-by-kind-16)
     - [Deprecation](#deprecation-1)
     - [API Change](#api-change-2)
     - [Feature](#feature-10)
     - [Failing Test](#failing-test)
     - [Bug or Regression](#bug-or-regression-16)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-8)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-7)
   - [Dependencies](#dependencies-14)
     - [Added](#added-14)
     - [Changed](#changed-14)
@@ -287,15 +284,15 @@
     - [Node Binaries](#node-binaries-16)
     - [Container Images](#container-images-16)
   - [Changelog since v1.31.0-beta.0](#changelog-since-v1310-beta0)
-  - [Urgent Upgrade Notes](#urgent-upgrade-notes-2)
-    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade-2)
+  - [Urgent Upgrade Notes](#urgent-upgrade-notes-1)
+    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade-1)
   - [Changes by Kind](#changes-by-kind-18)
     - [Deprecation](#deprecation-2)
     - [API Change](#api-change-4)
     - [Feature](#feature-12)
     - [Failing Test](#failing-test-1)
     - [Bug or Regression](#bug-or-regression-18)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-9)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-8)
   - [Dependencies](#dependencies-16)
     - [Added](#added-16)
     - [Changed](#changed-16)
@@ -312,7 +309,7 @@
     - [API Change](#api-change-5)
     - [Feature](#feature-13)
     - [Bug or Regression](#bug-or-regression-19)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-10)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-9)
   - [Dependencies](#dependencies-17)
     - [Added](#added-17)
     - [Changed](#changed-17)
@@ -329,7 +326,7 @@
     - [API Change](#api-change-6)
     - [Feature](#feature-14)
     - [Bug or Regression](#bug-or-regression-20)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-11)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-10)
   - [Dependencies](#dependencies-18)
     - [Added](#added-18)
     - [Changed](#changed-18)
@@ -342,14 +339,14 @@
     - [Node Binaries](#node-binaries-19)
     - [Container Images](#container-images-19)
   - [Changelog since v1.31.0-alpha.1](#changelog-since-v1310-alpha1)
-  - [Urgent Upgrade Notes](#urgent-upgrade-notes-3)
-    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade-3)
+  - [Urgent Upgrade Notes](#urgent-upgrade-notes-2)
+    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade-2)
   - [Changes by Kind](#changes-by-kind-21)
     - [API Change](#api-change-7)
     - [Feature](#feature-15)
     - [Failing Test](#failing-test-2)
     - [Bug or Regression](#bug-or-regression-21)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-12)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-11)
   - [Dependencies](#dependencies-19)
     - [Added](#added-19)
     - [Changed](#changed-19)
@@ -362,15 +359,15 @@
     - [Node Binaries](#node-binaries-20)
     - [Container Images](#container-images-20)
   - [Changelog since v1.30.0](#changelog-since-v1300-1)
-  - [Urgent Upgrade Notes](#urgent-upgrade-notes-4)
-    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade-4)
+  - [Urgent Upgrade Notes](#urgent-upgrade-notes-3)
+    - [(No, really, you MUST read this before you upgrade)](#no-really-you-must-read-this-before-you-upgrade-3)
   - [Changes by Kind](#changes-by-kind-22)
     - [Deprecation](#deprecation-3)
     - [API Change](#api-change-8)
     - [Feature](#feature-16)
     - [Failing Test](#failing-test-3)
     - [Bug or Regression](#bug-or-regression-22)
-    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-13)
+    - [Other (Cleanup or Flake)](#other-cleanup-or-flake-12)
   - [Dependencies](#dependencies-20)
     - [Added](#added-20)
     - [Changed](#changed-20)
@@ -388,12 +385,6 @@ filename | sha512 hash
 
 ## Changelog since v1.31.100-akslts
 
-## Urgent Upgrade Notes
-
-### (No, really, you MUST read this before you upgrade)
-
-- The kube-apiserver, kube-controller-manager and kube-scheduler images no longer contain `/go-runner`. The binaries still run directly, for example `/usr/local/bin/kube-apiserver`. Manifests that start these components through `/go-runner` must be updated to call the binary directly. ([#94](https://github.com/aks-lts/kubernetes/pull/94))
-
 ## Important Security Information
 
 This release contains changes that address the following vulnerabilities:
@@ -401,6 +392,10 @@ This release contains changes that address the following vulnerabilities:
 ### CVE-2026-2270: StatefulSet and ControllerRevision write permissions allow cross-namespace pod creation
 
 A confused deputy attack exists in the StatefulSet controller that allows a user with namespace-scoped write permissions on StatefulSet and ControllerRevision objects to create a cross-namespace pod. An attacker exploiting this vulnerability would have full control over the resulting pod’s metadata and specification, including namespace selection. Note that the cross-namespace pod will be immediately deleted by the garbage collector unless the attacker is able to construct a valid StatefulSet OwnerReference. This would require referencing the UID of an existing StatefulSet in the victim’s namespace.
+
+This vulnerability was reported by ImanOracle.
+
+The issue was fixed and coordinated by Maciej Szulik @soltysh, Filip Křepinský @atiratree, Verónica López @Verolop, Jeremy Rickard @jeremyrickard and Nathan Herz @natherz97
 
 **CVSS Rating:** Medium (5.9) [CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:N](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:U/C:H/I:H/A:N)
 
@@ -412,6 +407,10 @@ An NTLM coercion vulnerability exists on Windows nodes when the subPath supplied
 
 This allows an attacker to obtain the NetNTLMv2 hash of the account under which the kubelet is running. An attacker could then attempt to crack the hash to retrieve the corresponding password or relay it to impersonate the node, if the node is domain-joined.
 
+This vulnerability was reported by the Kubernetes Third-Party Security Audit subproject, OSTIF, and Shielder.
+
+The issue was fixed and coordinated by Yuanliang Zhang @zylxjtu, Verónica López @Verolop, Jeremy Rickard @jeremyrickard and Nathan Herz @natherz97
+
 **CVSS Rating:** Medium (5.8) [CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:C/C:H/I:N/A:N](https://www.first.org/cvss/calculator/3.1#CVSS:3.1/AV:N/AC:H/PR:H/UI:N/S:C/C:H/I:N/A:N)
 
 Upstream tracking: [[kubernetes/kubernetes#142098]](https://github.com/kubernetes/kubernetes/issues/142098)
@@ -419,13 +418,10 @@ Upstream tracking: [[kubernetes/kubernetes#142098]](https://github.com/kubernete
 ## Changes by Kind
 ### Bug or Regression
 
-- Restore only the StatefulSet `.spec` from ControllerRevisions, preserving fields outside `.spec` (CVE-2026-2270). Backport of [kubernetes/kubernetes#142159](https://github.com/kubernetes/kubernetes/pull/142159). ([#97](https://github.com/aks-lts/kubernetes/pull/97))
-- kubelet on Windows no longer follows device or UNC path targets when resolving subPath symlinks (CVE-2026-76654). Backport of [kubernetes/kubernetes#142168](https://github.com/kubernetes/kubernetes/pull/142168). ([#97](https://github.com/aks-lts/kubernetes/pull/97))
-
-### Other (Cleanup or Flake)
-
-- kube-apiserver, kube-controller-manager and kube-scheduler images are now built on `mcr.microsoft.com/aks/devinfra/base-os-runtime-static:master.261022.1` instead of the upstream go-runner base image. ([#94](https://github.com/aks-lts/kubernetes/pull/94))
-- Fix Dockerized builds with Docker 29 by reading the rsync container IP from `NetworkSettings.Networks` instead of the removed top-level `NetworkSettings.IPAddress` field. Backport of [kubernetes/kubernetes#135578](https://github.com/kubernetes/kubernetes/pull/135578). ([#99](https://github.com/aks-lts/kubernetes/pull/99))
+- Cherry pick of #142159 on release-1.31-lts to fix CVE-2026-2270 ([#97](https://github.com/aks-lts/kubernetes/pull/97))
+- Cherry pick of #142168 on release-1.31-lts to fix CVE-2026-76654 ([#97](https://github.com/aks-lts/kubernetes/pull/97))
+- Update kube-apiserver, kube-controller-manager and kube-scheduler base image to `mcr.microsoft.com/aks/devinfra/base-os-runtime-static:master.261022.1`, which does not include `/go-runner` ([#94](https://github.com/aks-lts/kubernetes/pull/94))
+- Cherry pick of #135578 on release-1.31-lts to fix Dockerized builds with Docker 29 ([#99](https://github.com/aks-lts/kubernetes/pull/99))
 
 
 # v1.31.100-akslts
